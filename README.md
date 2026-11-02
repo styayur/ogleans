@@ -1,15 +1,17 @@
 # Translation Kernel
 
-[CI](https://github.com/styayur/translation-kernel/actions) · [v0.1.0](https://github.com/styayur/translation-kernel/releases/tag/v0.1.0) · [中文交付报告](docs/DELIVERY_REPORT.zh-CN.md)
+[简体中文](README.zh-CN.md) · [CI](https://github.com/styayur/translation-kernel/actions) · [v0.1.0](https://github.com/styayur/translation-kernel/releases/tag/v0.1.0) · [中文交付报告](docs/DELIVERY_REPORT.zh-CN.md)
 
 A lightweight translation kernel for the browser.
+
+**Project stage:** Early preview, with a published v0.1.0 Chromium package; Firefox delivery and universal site compatibility are unverified.
 
 ![Translation Kernel v0.1.0 extension settings showing language, display and provider configuration in a fresh Chromium profile](docs/assets/extension-settings-v0.1.0.png)
 
 Real Chromium extension settings, captured with a fresh profile and no API keys.
 This shows configuration, not a translation-quality claim. [Capture steps](docs/README_SCREENSHOTS.md).
 
-**Translation Kernel provides primitives and APIs. External tools provide workflows.**
+Translation Kernel provides primitives and APIs; external tools provide workflows.
 
 Small core, rich API, loose coupling, composable tools. The core discovers webpage text, builds semantic segments, schedules translation providers and renders reversible bilingual text. No accounts or backend are required.
 
@@ -68,9 +70,11 @@ Select text on the page, open the popup, then run the action. Templates are rest
 
 ## Develop
 
-Requires Node.js 24+ and pnpm 12.4.2 (minimum Node 22.12 for source).
+Use Node.js 24+ (the CI version) and pnpm 12.4.2. The source manifest declares a minimum of Node.js 22.12; CI validates Node.js 24.
 
 ```sh
+git clone https://github.com/styayur/translation-kernel.git
+cd translation-kernel
 pnpm install
 pnpm exec playwright install chromium
 pnpm check
@@ -141,7 +145,7 @@ The content bridge sends batches and cancellation messages to the worker. The wo
 
 ## License
 
-This repository follows [Stya Yur's license policy](https://github.com/styayur/styayur/blob/main/LICENSE_POLICY.md), using separate terms for the library and application:
+This repository follows [styayur’s license policy](https://github.com/styayur/styayur/blob/main/LICENSE_POLICY.md), using separate terms for the library and application:
 
 - **Reusable kernel, SDK, example modules, project documentation and test/build support:** [MPL-2.0](LICENSE). File-level copyleft preserves changes to the reusable engine while permitting independently licensed integrations. Documentation describes this software and is distributed with it.
 - **Browser application (`apps/browser-extension/`), including its bundled distributed form:** [GPL-3.0-or-later](apps/browser-extension/LICENSE), as required for full applications. The included MPL-covered files remain under MPL in source; they are compatible with this combined GPL distribution under MPL 2.0 Section 3.3.
@@ -149,4 +153,8 @@ This repository follows [Stya Yur's license policy](https://github.com/styayur/s
 
 This is not an entirely MPL-licensed application. Separate third-party providers and tools can choose their own terms, subject to the licenses of any files they copy or combine. See [license boundaries](docs/licensing.md).
 
-Make translation infrastructure boring, small and dependable — and make everything else extensible.
+## Limitations, roadmap and contributing
+
+v0.1 uses non-streaming batches, local unencrypted provider secrets and on-demand Chromium permissions. Restricted browser pages cannot be translated; provider availability, quality and cost remain external concerns. Streaming adapters and Firefox packaging are future integration work, not current delivery.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before a PR; run `pnpm check` and `pnpm format:check`. Use [Issues](https://github.com/styayur/translation-kernel/issues) with a small local fixture and expected restore behavior. Never submit API keys, personal browsing content or paid-service fixtures.
