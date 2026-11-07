@@ -17,14 +17,17 @@ jobs:
       - run: pnpm check
       - uses: actions/upload-artifact@v7
         with:
-          name: readme-real-settings
-          path: docs/assets/extension-settings-v0.1.0.png
+          name: ogleans-visual-evidence
+          path: |
+            docs/assets/extension-settings-v0.2.0-alpha.1.png
+            docs/assets/collection-disabled.png
+            docs/assets/collection-external.png
           if-no-files-found: error
       - run: pnpm audit --prod --audit-level high
       - run: pnpm package
       - uses: actions/upload-artifact@v7
         with:
-          name: translation-kernel-v0.1.0
+          name: ogleans-v0.2.0-alpha.1
           path: release/
       - uses: actions/upload-artifact@v7
         if: failure()

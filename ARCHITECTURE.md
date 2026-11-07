@@ -1,50 +1,125 @@
-# Architecture
+# Ogleans architecture
 
-The microkernel only handles translation primitives. The event-driven boundary lets extensions observe outcomes without accessing internal maps or DOM anchors. API contracts are version 1 (`API_VERSION`); configuration has its own `schemaVersion: 1`.
+Ogleans is a reading core with three independently usable layers. Translation is an optional capability, not the owner of the page interaction layer or the collection store.
 
-```mermaid
-flowchart TD
-  HTML[Browser DOM] --> Adapter[HTML Document Adapter]
-  Adapter --> Filter[Rules and content filter]
-  Filter --> Segments[Semantic segmenter]
-  Segments --> Model[Universal document model]
-  Model --> Kernel[Translation Kernel]
-  Kernel --> Cache[Bounded translation cache]
-  Cache --> Router[Provider router]
-  Router --> Providers[External providers]
-  Providers --> Render[Adapter renderer]
-  Render --> HTML
-  Kernel --> Events[Typed Event API]
-  Events --> Tools[External tools and bridges]
-  Actions[Action API] --> Tools
+```text
+┌──────────────────────────── reading core ────────────────────────────┐
+│ Gesture layer              Translation layer          Collection    │
+│ recognizer / mappings      scheduler / cache          anchor/store  │
+│ floating controls          providers / renderer       search/export  │
+└───────────────┬───────────────────┬───────────────────────┬──────────┘
+                │                   │                       │
+          page DOM / UI       background worker       chrome.storage.local
 ```
 
-## Universal document model and Adapter API
+The reusable packages are platform-neutral where possible. The MV3 application composes them and owns browser permissions.
 
-The kernel depends on `DocumentAdapter`, never on `HTMLElement`. Documents contain blocks and segments, with optional opaque metadata. The HTML adapter keeps DOM references outside the model. A memory adapter demonstrates the same kernel without HTML. External PDF/EPUB/OCR/subtitle adapters can implement the protocol; none of those readers are included.
+## Independence rules
 
-## Provider API and scheduling
+1. **Gesture layer does not import the translation implementation.** It uses a gesture action registry. Actions may be unavailable in `external` or `disabled` translation mode, but collection, dictionary, navigation and hide actions remain active.
+2. **Collection layer does not import translation packages.** It stores selected text, optional translations, source metadata, W3C-compatible selectors, tags, notes and bookmark-export metadata. A translation result is optional data on a collection record, not a storage dependency.
+3. **Translation layer does not own collections.** It extracts document segments, schedules provider tasks, caches bounded results and renders text through the Document Adapter. Disabling or replacing it leaves collection data untouched.
+4. **Public contracts remain versioned.** Existing v1 kernel, Provider, Adapter, Event and Action APIs remain available. Reading, gesture, scheduler and collection contracts add their own version constants.
 
-Providers receive ID-bearing segments and a bounded context. Results must form a complete, unique ID set with nonempty text. Router batches have a maximum of 64; kernel/browser batches use 16. Timeout races also cover providers that ignore AbortSignal. Parent cancellation prevents retries and fallback. Retry count is capped at three; application policy is one retry. Health stores failure counts and last-success timestamps, without circuits or a gateway.
+## Runtime composition
 
-The kernel uses an LRU cache capped at 1,000 entries with one-hour expiry. Keys include source/target and context, so page-context-dependent output is not reused across unrelated pages. Cached translations get current segment IDs. Cache and export data are ephemeral; no page history database.
+### Content script
 
-## DOM mapping and rendering
+The content script is injected only after an explicit action or keyboard command, using `activeTab` and `scripting`. It creates an isolated shadow-root overlay for reading controls and collection UI. Page content and extension UI are separated:
 
-The scanner walks text nodes and groups them at their nearest semantic block. Nested spans, links and inline elements stay within a segment. Long blocks use sentence boundaries with Unicode-safe hard limits. Anchors hold original text nodes, their block and segment IDs. A changed block receives a new generation ID; unchanged blocks retain theirs during mutation processing. IDs are stable within one adapter session, not across reloads.
+- `HtmlAdapter` scans eligible page text and excludes `data-ogleans-ui`, generated translation spans, forms, code, math, hidden content and editable regions.
+- `GestureRecognizer` observes pointer movement only while the reading layer is active. A click below the movement threshold produces no action. The default trigger is Alt + primary drag, so ordinary clicks and the native context menu are not intercepted.
+- `TranslationEngine` reads the document only in `built-in` mode. It streams scheduler completions to `DomRenderer`, which appends text nodes and never injects provider HTML.
+- `CollectionStore` anchors a selection with a W3C TextQuoteSelector and TextPositionSelector. The UI captures displayed selections explicitly in passive/external mode rather than claiming that original text is available.
 
-Translation spans use `data-tk-translation` and `data-tk-segment-id`. Bilingual rendering appends plain text without replacing original elements. Translation-only mode blanks mapped Text nodes while retaining their node identity and original data; restore writes only to nodes still blank, preserving application changes. Inline elements and event handlers remain attached. Arbitrary framework reconciliation can remove generated nodes; the next mutation reconciles surviving anchors. Content inside code/math/form/navigation/hidden/editable regions is excluded. Shadow roots and iframes are outside v0.1 support.
+### Service worker
 
-## Mutation handling
+The service worker is the trusted boundary:
 
-Observation starts when translation is activated, is debounced by 80 ms and scans deduplicated dirty block subtrees. Own writes temporarily disconnect observation; pending application records are drained before writes so they remain scheduled. Removed anchors and translation values are pruned. Stop/Restore/Dispose disconnect, clear timers and cancel requests. Idle unactivated pages have no injected script, observer or scan. A broad application replacement may legitimately require a broad subtree scan.
+- reads full provider configuration;
+- keeps API keys and custom headers out of content scripts;
+- instantiates providers and the `MultiProviderScheduler`;
+- enforces global and per-provider concurrency, rate windows, retry, fallback, timeout and cancellation;
+- streams `result`, `failure` and `done` events over a dedicated translation port;
+- validates collection messages and owns local collection writes;
+- checks optional bookmark permission only when native export is requested.
 
-## Action API and Event API
+Provider origins are optional host permissions. Provider requests are HTTPS except loopback HTTP. Redirects are rejected and request credentials are omitted.
 
-ActionRegistry accepts `{id,title,run}` and bounded selection context. The browser composes URL actions from portable settings, encoding selected text and rejecting non-HTTP(S) protocols. External destinations own the subsequent workflow. EventBus snapshots payloads for each handler, isolates listener exceptions and returns unsubscribe functions. Kernel state is exposed through snapshots (`getSegments`, `exportDocument`), never mutable internal references.
+## Translation modes
+
+| Mode       | Scheduling | Gestures | Collections | Selection capture                      | External extension coexistence                                       |
+| ---------- | ---------- | -------- | ----------- | -------------------------------------- | -------------------------------------------------------------------- |
+| `built-in` | Ogleans    | Active   | Active      | Active                                 | Ogleans may insert its own translation spans                         |
+| `external` | Disabled   | Active   | Active      | Passive, marked as displayed selection | Ogleans does not mutate translation output or read another extension |
+| `disabled` | Disabled   | Active   | Active      | Active on the page DOM                 | Ogleans stays passive                                                |
+
+There is no universal browser API for controlling another extension. Ogleans documents passive compatibility and a user-mediated external capture boundary; it does not read private extension storage or internal messages.
+
+## Scheduling model
+
+Segments have stable IDs for the current adapter session. The scheduler assigns each segment to one provider and keeps the original segment index. Provider selection strategies are:
+
+- `round-robin`;
+- `weighted` (smooth weighted round robin);
+- `language-aware` (provider language constraints);
+- `manual` (per segment ID or index);
+- `primary-fallback`.
+
+A paragraph is not sent concurrently to multiple providers. Retry and fallback are sequential after a failure. Provider limits and the global semaphore bound network work. Cancellation aborts active and queued tasks; successful tasks remain available. Results are returned and rendered without changing source order.
+
+The translation cache is bounded to 1,000 entries with a one-hour TTL. Cache keys include source/target, terminology and text. Provider ID is retained in the result.
+
+## Collection persistence
+
+Collections live under the local `ogleans.collections.v1` storage key. The schema preserves:
+
+- stable item ID;
+- selected/displayed text and optional original text;
+- source URL, title, author and source language;
+- available translations with provenance;
+- text anchor selectors and Text Fragment navigation;
+- tags, note, timestamps and bookmark-export metadata;
+- a W3C Web Annotation-compatible annotation object.
+
+No collection operation requires a translation provider to be configured or online. JSON/Markdown export and import are local-only. Browser bookmarks are an optional export destination; Ogleans never uses them as the canonical record.
 
 ## Security boundaries
 
-The service worker owns provider config and network calls. Storage access is restricted to trusted extension contexts before reading/writing secrets. Only exact internal popup/options URLs may read full config or run actions; only HTTP(S) top-frame content senders may request bounded translation batches. There is no externally-connectable message listener or page-global SDK injection. Content scripts get config with no providers or keys. Concurrency is bounded globally and per tab. Credentials are omitted and HTTP redirects rejected. The application requests activeTab, scripting, storage and optional provider origins; it does not request all-page persistent access.
+- Full config and secrets are available only to exact extension pages (`popup.html`, `options.html`).
+- Content messages must come from the extension ID, a top frame and an HTTP(S) page.
+- Translation ports accept bounded segments and never return credentials.
+- Storage is restricted to trusted extension contexts.
+- Translation text is rendered with `textContent`.
+- Collection imports validate fields and limits; exports contain no provider keys or custom headers.
+- Bookmark export creates bookmarks and searches for duplicates; it never deletes or overwrites existing browser bookmarks.
+- Ogleans has no telemetry, remote code, cloud sync or page-history database.
 
-CSP allows local scripts only. No eval, dynamic functions, remote JavaScript, innerHTML translation injection or executable model output. Imports validate known schema fields and reject invalid protocols, languages, duplicate IDs and unsafe headers. API keys are unencrypted local data, not a vault. Explicit action URLs may use arbitrary HTTP destinations because users configure them; provider HTTP endpoints are limited to loopback.
+## Failure behavior
+
+- One failed paragraph does not discard successful paragraphs.
+- Provider errors are reported per segment while other providers continue.
+- A source page that changes can make a quote or position selector unavailable. The collection remains readable; Ogleans does not claim that every old anchor can be restored.
+- Existing bookmarks are preserved even if an item is deleted from Ogleans.
+- If a page uses a framework reconciler, generated translation spans may be replaced. The adapter reconciles surviving anchors and scans new content while observation is active.
+- Firefox packaging is not validated and is not claimed as supported.
+
+## Package boundaries
+
+```text
+packages/gesture/       gesture recognition, conflict detection, action registry
+packages/collection/    schema, local store, anchors, search, exports, bookmark HTML
+packages/scheduler/     multi-provider assignment, concurrency, rate limits, retries
+packages/translation/   streaming document coordinator and scheduler transport
+packages/core/          original TranslationKernel and bounded cache
+packages/dom/           HTML adapter and mutation handling
+packages/renderer/      text-only rendering and restore
+packages/provider-api/  provider contract and compatibility router
+packages/shared/        versioned document/translation contracts
+packages/sdk/           public exports for all reusable layers
+apps/browser-extension/ MV3 composition, trusted worker and UI
+```
+
+## License boundary
+
+Reusable packages, examples, documentation and test/build support remain MPL-2.0. The full browser application and its distributed bundle remain GPL-3.0-or-later. Third-party dependencies retain their own licenses. See [license boundaries](docs/licensing.md).

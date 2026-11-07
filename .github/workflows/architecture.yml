@@ -3,12 +3,14 @@ on:
   pull_request:
     paths:
       - 'README.md'
+      - 'README.zh-CN.md'
       - 'docs/**'
       - '.github/workflows/architecture.yml'
   push:
     branches: [main]
     paths:
       - 'README.md'
+      - 'README.zh-CN.md'
       - 'docs/**'
       - '.github/workflows/architecture.yml'
   workflow_dispatch:

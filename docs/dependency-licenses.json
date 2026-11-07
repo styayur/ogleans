@@ -1,16 +1,8 @@
 {
   "MIT": [
     {
-      "name": "@acemir/cssom",
-      "versions": ["0.9.31"],
-      "license": "MIT",
-      "author": "Nikita Vasilyev",
-      "homepage": "https://github.com/acemir/CSSOM#readme",
-      "description": "CSS Object Model implementation and CSS parser"
-    },
-    {
       "name": "@asamuzakjp/css-color",
-      "versions": ["5.1.11"],
+      "versions": ["7.1.5"],
       "license": "MIT",
       "author": "asamuzaK",
       "homepage": "https://github.com/asamuzaK/cssColor#readme",
@@ -18,27 +10,11 @@
     },
     {
       "name": "@asamuzakjp/dom-selector",
-      "versions": ["6.8.1"],
+      "versions": ["10.0.3"],
       "license": "MIT",
       "author": "asamuzaK",
       "homepage": "https://github.com/asamuzaK/domSelector#readme",
       "description": "A CSS selector engine."
-    },
-    {
-      "name": "@asamuzakjp/generational-cache",
-      "versions": ["1.0.1"],
-      "license": "MIT",
-      "author": "asamuzaK",
-      "homepage": "https://github.com/asamuzaK/generationalCache",
-      "description": "A generational pseudo-LRU cache with strict maximum size limits."
-    },
-    {
-      "name": "@asamuzakjp/nwsapi",
-      "versions": ["2.3.9"],
-      "license": "MIT",
-      "author": "Diego Perini",
-      "homepage": "http://javascript.nwbox.com/nwsapi/",
-      "description": "Fast CSS Selectors API Engine"
     },
     {
       "name": "@babel/helper-string-parser",
@@ -79,6 +55,22 @@
       "author": "Bramus Van Damme",
       "homepage": "https://github.com/bramus/specificity#readme",
       "description": "Calculate specificity of a CSS Selector"
+    },
+    {
+      "name": "@cacheable/memory",
+      "versions": ["2.2.0"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/cacheable#readme",
+      "description": "High Performance In-Memory Cache for Node.js"
+    },
+    {
+      "name": "@cacheable/utils",
+      "versions": ["2.5.0"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/cacheable#readme",
+      "description": "Cacheable Utilities for Caching Libraries"
     },
     {
       "name": "@csstools/css-calc",
@@ -125,16 +117,8 @@
       "description": "Regular expression parser for ECMAScript."
     },
     {
-      "name": "@eslint/eslintrc",
-      "versions": ["3.3.7"],
-      "license": "MIT",
-      "author": "Nicholas C. Zakas",
-      "homepage": "https://github.com/eslint/eslintrc#readme",
-      "description": "The legacy ESLintRC config file format for ESLint"
-    },
-    {
       "name": "@eslint/js",
-      "versions": ["9.39.5"],
+      "versions": ["10.0.1"],
       "license": "MIT",
       "homepage": "https://eslint.org",
       "description": "ESLint JavaScript language implementation"
@@ -172,8 +156,24 @@
       "description": "Trace the original position through a source map"
     },
     {
+      "name": "@keyv/bigmap",
+      "versions": ["1.3.1"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/keyv",
+      "description": "Bigmap for Keyv"
+    },
+    {
+      "name": "@keyv/serialize",
+      "versions": ["1.1.1"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/keyv",
+      "description": "Serialization for Keyv"
+    },
+    {
       "name": "@oxc-project/types",
-      "versions": ["0.152.0"],
+      "versions": ["0.156.0"],
       "license": "MIT",
       "author": "Boshen and oxc contributors",
       "homepage": "https://oxc.rs",
@@ -181,7 +181,7 @@
     },
     {
       "name": "@rolldown/binding-win32-x64-msvc",
-      "versions": ["1.2.12"],
+      "versions": ["1.2.16"],
       "license": "MIT",
       "homepage": "https://rolldown.rs/",
       "description": "Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API."
@@ -202,7 +202,7 @@
     },
     {
       "name": "@types/chrome",
-      "versions": ["0.1.43"],
+      "versions": ["0.3.7"],
       "license": "MIT",
       "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/chrome",
       "description": "TypeScript definitions for chrome"
@@ -215,25 +215,18 @@
       "description": "TypeScript definitions for deep-eql"
     },
     {
+      "name": "@types/esrecurse",
+      "versions": ["4.3.1"],
+      "license": "MIT",
+      "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/esrecurse",
+      "description": "TypeScript definitions for esrecurse"
+    },
+    {
       "name": "@types/estree",
       "versions": ["1.0.9"],
       "license": "MIT",
       "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/estree",
       "description": "TypeScript definitions for estree"
-    },
-    {
-      "name": "@types/filesystem",
-      "versions": ["0.0.36"],
-      "license": "MIT",
-      "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/filesystem",
-      "description": "TypeScript definitions for filesystem"
-    },
-    {
-      "name": "@types/filewriter",
-      "versions": ["0.0.33"],
-      "license": "MIT",
-      "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/filewriter",
-      "description": "TypeScript definitions for filewriter"
     },
     {
       "name": "@types/har-format",
@@ -251,7 +244,7 @@
     },
     {
       "name": "@types/node",
-      "versions": ["24.19.1"],
+      "versions": ["26.6.5"],
       "license": "MIT",
       "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
       "description": "TypeScript definitions for node"
@@ -272,91 +265,91 @@
     },
     {
       "name": "@typescript-eslint/eslint-plugin",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/eslint-plugin",
       "description": "TypeScript plugin for ESLint"
     },
     {
       "name": "@typescript-eslint/parser",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/parser",
       "description": "An ESLint custom parser which leverages TypeScript ESTree"
     },
     {
       "name": "@typescript-eslint/project-service",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io",
       "description": "Standalone TypeScript project service wrapper for linting."
     },
     {
       "name": "@typescript-eslint/scope-manager",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/scope-manager",
       "description": "TypeScript scope analyser for ESLint"
     },
     {
       "name": "@typescript-eslint/tsconfig-utils",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io",
       "description": "Utilities for collecting TSConfigs for linting scenarios."
     },
     {
       "name": "@typescript-eslint/type-utils",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io",
       "description": "Type utilities for working with TypeScript + ESLint together"
     },
     {
       "name": "@typescript-eslint/types",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io",
       "description": "Types for the TypeScript-ESTree AST spec"
     },
     {
       "name": "@typescript-eslint/typescript-estree",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/typescript-estree",
       "description": "A parser that converts TypeScript source code into an ESTree compatible form"
     },
     {
       "name": "@typescript-eslint/utils",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/utils",
       "description": "Utilities for working with TypeScript + ESLint together"
     },
     {
       "name": "@typescript-eslint/visitor-keys",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io",
       "description": "Visitor keys used to help traverse the TypeScript-ESTree AST"
     },
     {
       "name": "@vitest/mocker",
-      "versions": ["5.0.3"],
+      "versions": ["5.0.5"],
       "license": "MIT",
       "homepage": "https://github.com/vitest-dev/vitest/tree/main/packages/mocker",
       "description": "Vitest module mocker implementation"
     },
     {
       "name": "@vitest/spy",
-      "versions": ["5.0.3"],
+      "versions": ["5.0.5"],
       "license": "MIT",
       "homepage": "https://vitest.dev/api/mock",
       "description": "Lightweight Jest compatible spy implementation"
     },
     {
       "name": "@vue/compiler-core",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/compiler-core#readme",
@@ -364,7 +357,7 @@
     },
     {
       "name": "@vue/compiler-dom",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/compiler-dom#readme",
@@ -372,7 +365,7 @@
     },
     {
       "name": "@vue/compiler-sfc",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/compiler-sfc#readme",
@@ -380,7 +373,7 @@
     },
     {
       "name": "@vue/compiler-ssr",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/compiler-ssr#readme",
@@ -388,7 +381,7 @@
     },
     {
       "name": "@vue/reactivity",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/reactivity#readme",
@@ -396,7 +389,7 @@
     },
     {
       "name": "@vue/runtime-core",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/runtime-core#readme",
@@ -404,7 +397,7 @@
     },
     {
       "name": "@vue/runtime-dom",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/runtime-dom#readme",
@@ -412,7 +405,7 @@
     },
     {
       "name": "@vue/server-renderer",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/server-renderer#readme",
@@ -420,7 +413,7 @@
     },
     {
       "name": "@vue/shared",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://github.com/vuejs/core/tree/main/packages/shared#readme",
@@ -441,28 +434,12 @@
       "description": "Modern, fast React.js JSX parser"
     },
     {
-      "name": "agent-base",
-      "versions": ["7.1.4"],
-      "license": "MIT",
-      "author": "Nathan Rajlich",
-      "homepage": "https://github.com/TooTallNate/proxy-agents#readme",
-      "description": "Turn a function into an `http.Agent` instance"
-    },
-    {
       "name": "ajv",
       "versions": ["6.15.0"],
       "license": "MIT",
       "author": "Evgeny Poberezkin",
       "homepage": "https://github.com/ajv-validator/ajv",
       "description": "Another JSON Schema Validator"
-    },
-    {
-      "name": "ansi-styles",
-      "versions": ["4.3.0"],
-      "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/chalk/ansi-styles#readme",
-      "description": "ANSI escape codes for styling strings in the terminal"
     },
     {
       "name": "assertion-error",
@@ -474,7 +451,7 @@
     },
     {
       "name": "balanced-match",
-      "versions": ["1.0.2", "4.0.4"],
+      "versions": ["4.0.4"],
       "license": "MIT",
       "homepage": "https://github.com/juliangruber/balanced-match#readme",
       "description": "Match balanced character pairs, like \"{\" and \"}\""
@@ -489,18 +466,18 @@
     },
     {
       "name": "brace-expansion",
-      "versions": ["1.1.21", "5.0.12"],
+      "versions": ["5.0.12"],
       "license": "MIT",
       "homepage": "https://github.com/juliangruber/brace-expansion#readme",
       "description": "Brace expansion as known from sh/bash"
     },
     {
-      "name": "callsites",
-      "versions": ["3.1.0"],
+      "name": "cacheable",
+      "versions": ["2.5.0"],
       "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/sindresorhus/callsites#readme",
-      "description": "Get callsites from the V8 stack trace API"
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/cacheable#readme",
+      "description": "High Performance Layer 1 / Layer 2 Caching with Keyv Storage"
     },
     {
       "name": "chai",
@@ -509,37 +486,6 @@
       "author": "Jake Luer",
       "homepage": "http://chaijs.com",
       "description": "BDD/TDD assertion library for node.js and the browser. Test framework agnostic."
-    },
-    {
-      "name": "chalk",
-      "versions": ["4.1.2"],
-      "license": "MIT",
-      "homepage": "https://github.com/chalk/chalk#readme",
-      "description": "Terminal string styling done right"
-    },
-    {
-      "name": "color-convert",
-      "versions": ["2.0.1"],
-      "license": "MIT",
-      "author": "Heather Arthur",
-      "homepage": "https://github.com/Qix-/color-convert#readme",
-      "description": "Plain color conversion functions"
-    },
-    {
-      "name": "color-name",
-      "versions": ["1.1.4"],
-      "license": "MIT",
-      "author": "DY",
-      "homepage": "https://github.com/colorjs/color-name",
-      "description": "A list of color names and its values"
-    },
-    {
-      "name": "concat-map",
-      "versions": ["0.0.1"],
-      "license": "MIT",
-      "author": "James Halliday",
-      "homepage": "https://github.com/substack/node-concat-map#readme",
-      "description": "concatenative mapdashery"
     },
     {
       "name": "cross-spawn",
@@ -558,13 +504,6 @@
       "description": "A tool set for CSS: fast detailed parser (CSS → AST), walker (AST traversal), generator (AST → CSS) and lexer (validation and matching) based on specs and browser implementations"
     },
     {
-      "name": "cssstyle",
-      "versions": ["6.2.0"],
-      "license": "MIT",
-      "homepage": "https://github.com/jsdom/cssstyle#readme",
-      "description": "An implementation of the CSSStyleDeclaration class from the CSS Object Model specification"
-    },
-    {
       "name": "csstype",
       "versions": ["3.2.3"],
       "license": "MIT",
@@ -574,7 +513,7 @@
     },
     {
       "name": "data-urls",
-      "versions": ["7.0.0"],
+      "versions": ["8.0.0"],
       "license": "MIT",
       "author": "Domenic Denicola",
       "homepage": "https://github.com/jsdom/data-urls#readme",
@@ -622,7 +561,7 @@
     },
     {
       "name": "eslint",
-      "versions": ["9.39.5"],
+      "versions": ["10.14.0"],
       "license": "MIT",
       "author": "Nicholas C. Zakas",
       "homepage": "https://eslint.org",
@@ -670,11 +609,11 @@
     },
     {
       "name": "file-entry-cache",
-      "versions": ["8.0.0"],
+      "versions": ["11.1.5"],
       "license": "MIT",
       "author": "Jared Wray",
-      "homepage": "https://github.com/jaredwray/file-entry-cache#readme",
-      "description": "Super simple cache for file metadata, useful for process that work o a given series of files and that only need to repeat the job on the changed ones since the previous run of the process"
+      "homepage": "https://github.com/jaredwray/cacheable#readme",
+      "description": "A lightweight cache for file metadata, ideal for processes that work on a specific set of files and only need to reprocess files that have changed since the last run"
     },
     {
       "name": "find-up",
@@ -686,15 +625,15 @@
     },
     {
       "name": "flat-cache",
-      "versions": ["4.0.1"],
+      "versions": ["6.1.23"],
       "license": "MIT",
       "author": "Jared Wray",
-      "homepage": "https://github.com/jaredwray/flat-cache#readme",
-      "description": "A stupidly simple key/value storage using files to persist some data"
+      "homepage": "https://github.com/jaredwray/cacheable#readme",
+      "description": "A simple key/value storage using files to persist the data"
     },
     {
       "name": "globals",
-      "versions": ["14.0.0", "16.5.0"],
+      "versions": ["17.14.0"],
       "license": "MIT",
       "author": "Sindre Sorhus",
       "homepage": "https://github.com/sindresorhus/globals#readme",
@@ -709,28 +648,28 @@
       "description": "Check if argv has a specific flag"
     },
     {
+      "name": "hashery",
+      "versions": ["1.5.1"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/hashery#readme",
+      "description": "Browser Compatible Object Hashing"
+    },
+    {
+      "name": "hookified",
+      "versions": ["1.15.1", "2.2.0"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/hookified#readme",
+      "description": "Event Emitting and Middleware Hooks"
+    },
+    {
       "name": "html-encoding-sniffer",
-      "versions": ["6.0.0"],
+      "versions": ["7.0.0"],
       "license": "MIT",
       "author": "Domenic Denicola",
       "homepage": "https://github.com/jsdom/html-encoding-sniffer#readme",
-      "description": "Sniff the encoding from a HTML byte stream"
-    },
-    {
-      "name": "http-proxy-agent",
-      "versions": ["7.0.2"],
-      "license": "MIT",
-      "author": "Nathan Rajlich",
-      "homepage": "https://github.com/TooTallNate/proxy-agents#readme",
-      "description": "An HTTP(s) proxy `http.Agent` implementation for HTTP"
-    },
-    {
-      "name": "https-proxy-agent",
-      "versions": ["7.0.6"],
-      "license": "MIT",
-      "author": "Nathan Rajlich",
-      "homepage": "https://github.com/TooTallNate/proxy-agents#readme",
-      "description": "An HTTP(s) proxy `http.Agent` implementation for HTTPS"
+      "description": "Sniff the encoding of an HTML or XML byte stream"
     },
     {
       "name": "ignore",
@@ -739,14 +678,6 @@
       "author": "kael",
       "homepage": "https://github.com/kaelzhang/node-ignore#readme",
       "description": "Ignore is a manager and filter for .gitignore rules, the one used by eslint, gitbook and many others."
-    },
-    {
-      "name": "import-fresh",
-      "versions": ["3.3.1"],
-      "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/sindresorhus/import-fresh#readme",
-      "description": "Import a module while bypassing the cache"
     },
     {
       "name": "imurmurhash",
@@ -781,27 +712,11 @@
       "description": "Check whether a given string matches the `PotentialCustomElementName` production as defined in the HTML Standard."
     },
     {
-      "name": "js-yaml",
-      "versions": ["4.3.2"],
-      "license": "MIT",
-      "author": "Vladimir Zapparov",
-      "homepage": "https://github.com/nodeca/js-yaml#readme",
-      "description": "YAML 1.2 parser and serializer"
-    },
-    {
       "name": "jsdom",
-      "versions": ["28.1.0"],
+      "versions": ["30.1.3"],
       "license": "MIT",
       "homepage": "https://github.com/jsdom/jsdom#readme",
       "description": "A JavaScript implementation of many web standards"
-    },
-    {
-      "name": "json-buffer",
-      "versions": ["3.0.1"],
-      "license": "MIT",
-      "author": "Dominic Tarr",
-      "homepage": "https://github.com/dominictarr/json-buffer",
-      "description": "JSON parse & stringify that supports binary via bops & base64"
     },
     {
       "name": "json-schema-traverse",
@@ -821,7 +736,7 @@
     },
     {
       "name": "keyv",
-      "versions": ["4.5.4"],
+      "versions": ["5.6.0"],
       "license": "MIT",
       "author": "Jared Wray",
       "homepage": "https://github.com/jaredwray/keyv",
@@ -842,14 +757,6 @@
       "author": "Sindre Sorhus",
       "homepage": "https://github.com/sindresorhus/locate-path#readme",
       "description": "Get the first path that exists on disk of multiple paths"
-    },
-    {
-      "name": "lodash.merge",
-      "versions": ["4.6.2"],
-      "license": "MIT",
-      "author": "John-David Dalton",
-      "homepage": "https://lodash.com/",
-      "description": "The Lodash method `_.merge` exported as a module."
     },
     {
       "name": "magic-string",
@@ -884,7 +791,7 @@
     },
     {
       "name": "obug",
-      "versions": ["2.2.1"],
+      "versions": ["3.0.0"],
       "license": "MIT",
       "author": "Kevin Deng",
       "homepage": "https://github.com/sxzz/obug#readme",
@@ -913,14 +820,6 @@
       "author": "Sindre Sorhus",
       "homepage": "https://github.com/sindresorhus/p-locate#readme",
       "description": "Get the first fulfilled promise that satisfies the provided testing function"
-    },
-    {
-      "name": "parent-module",
-      "versions": ["1.0.1"],
-      "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/sindresorhus/parent-module#readme",
-      "description": "Get the path of the parent module"
     },
     {
       "name": "parse5",
@@ -956,7 +855,7 @@
     },
     {
       "name": "postcss",
-      "versions": ["8.5.29"],
+      "versions": ["8.5.29", "8.5.32"],
       "license": "MIT",
       "author": "Andrey Sitnik",
       "homepage": "https://postcss.org/",
@@ -987,15 +886,23 @@
       "description": "A robust Punycode converter that fully complies to RFC 3492 and RFC 5891, and works on nearly all JavaScript platforms."
     },
     {
+      "name": "qified",
+      "versions": ["0.10.1"],
+      "license": "MIT",
+      "author": "Jared Wray",
+      "homepage": "https://github.com/jaredwray/qified#readme",
+      "description": "Task and Message Queues with Multiple Providers"
+    },
+    {
       "name": "react",
-      "versions": ["19.3.0"],
+      "versions": ["19.3.1"],
       "license": "MIT",
       "homepage": "https://react.dev/",
       "description": "React is a JavaScript library for building user interfaces."
     },
     {
       "name": "react-dom",
-      "versions": ["19.3.0"],
+      "versions": ["19.3.1"],
       "license": "MIT",
       "homepage": "https://react.dev/",
       "description": "React package for working with the DOM."
@@ -1009,16 +916,8 @@
       "description": "Require module from string"
     },
     {
-      "name": "resolve-from",
-      "versions": ["4.0.0"],
-      "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/sindresorhus/resolve-from#readme",
-      "description": "Resolve the path of a module like `require.resolve()` but from a given path"
-    },
-    {
       "name": "rolldown",
-      "versions": ["1.2.12"],
+      "versions": ["1.2.16"],
       "license": "MIT",
       "homepage": "https://rolldown.rs/",
       "description": "Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API."
@@ -1054,14 +953,6 @@
       "description": "Runtime agnostic JS utils"
     },
     {
-      "name": "strip-json-comments",
-      "versions": ["3.1.1"],
-      "license": "MIT",
-      "author": "Sindre Sorhus",
-      "homepage": "https://github.com/sindresorhus/strip-json-comments#readme",
-      "description": "Strip comments from JSON. Lets you use comments in your JSON files!"
-    },
-    {
       "name": "supports-color",
       "versions": ["7.2.0"],
       "license": "MIT",
@@ -1070,16 +961,8 @@
       "description": "Detect whether a terminal supports color"
     },
     {
-      "name": "symbol-tree",
-      "versions": ["3.2.4"],
-      "license": "MIT",
-      "author": "Joris van der Wel",
-      "homepage": "https://github.com/jsdom/js-symbol-tree#symbol-tree",
-      "description": "Turn any collection of objects into its own efficient tree or linked list using Symbol"
-    },
-    {
       "name": "tinybench",
-      "versions": ["6.2.0"],
+      "versions": ["6.2.3"],
       "license": "MIT",
       "homepage": "https://github.com/tinylibs/tinybench#readme",
       "description": "🔎 A simple, tiny and lightweight benchmarking library!"
@@ -1118,7 +1001,7 @@
     },
     {
       "name": "tr46",
-      "versions": ["6.0.0"],
+      "versions": ["7.0.0"],
       "license": "MIT",
       "author": "Sebastian Mayr",
       "homepage": "https://github.com/jsdom/tr46#readme",
@@ -1142,28 +1025,28 @@
     },
     {
       "name": "typescript-eslint",
-      "versions": ["8.71.1"],
+      "versions": ["8.71.0"],
       "license": "MIT",
       "homepage": "https://typescript-eslint.io/packages/typescript-eslint",
       "description": "Tooling which enables you to use TypeScript with ESLint"
     },
     {
       "name": "undici",
-      "versions": ["7.30.0"],
+      "versions": ["8.12.2"],
       "license": "MIT",
       "homepage": "https://undici.nodejs.org",
       "description": "An HTTP/1.1 client, written from scratch for Node.js"
     },
     {
       "name": "undici-types",
-      "versions": ["7.24.6"],
+      "versions": ["8.9.0"],
       "license": "MIT",
       "homepage": "https://undici.nodejs.org",
       "description": "A stand-alone types package for Undici"
     },
     {
       "name": "vite",
-      "versions": ["8.3.3"],
+      "versions": ["8.3.5"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://vite.dev",
@@ -1171,7 +1054,7 @@
     },
     {
       "name": "vitest",
-      "versions": ["5.0.3"],
+      "versions": ["5.0.5"],
       "license": "MIT",
       "author": "Anthony Fu",
       "homepage": "https://vitest.dev",
@@ -1179,7 +1062,7 @@
     },
     {
       "name": "vue",
-      "versions": ["3.5.43"],
+      "versions": ["3.5.44"],
       "license": "MIT",
       "author": "Evan You",
       "homepage": "https://vuejs.org/",
@@ -1187,7 +1070,7 @@
     },
     {
       "name": "w3c-xmlserializer",
-      "versions": ["5.0.0"],
+      "versions": ["6.0.0"],
       "license": "MIT",
       "homepage": "https://github.com/jsdom/w3c-xmlserializer#readme",
       "description": "A per-spec XML serializer implementation"
@@ -1202,7 +1085,7 @@
     },
     {
       "name": "whatwg-url",
-      "versions": ["16.0.1"],
+      "versions": ["17.3.0"],
       "license": "MIT",
       "author": "Sebastian Mayr",
       "homepage": "https://github.com/jsdom/whatwg-url#readme",
@@ -1260,7 +1143,7 @@
   "Apache-2.0": [
     {
       "name": "@eslint/config-array",
-      "versions": ["0.21.2"],
+      "versions": ["0.23.5"],
       "license": "Apache-2.0",
       "author": "Nicholas C. Zakas",
       "homepage": "https://github.com/eslint/rewrite/tree/main/packages/config-array#readme",
@@ -1268,14 +1151,14 @@
     },
     {
       "name": "@eslint/config-helpers",
-      "versions": ["0.4.2"],
+      "versions": ["0.7.0"],
       "license": "Apache-2.0",
       "homepage": "https://github.com/eslint/rewrite/tree/main/packages/config-helpers#readme",
       "description": "Helper utilities for creating ESLint configuration"
     },
     {
       "name": "@eslint/core",
-      "versions": ["0.17.0"],
+      "versions": ["1.2.1"],
       "license": "Apache-2.0",
       "author": "Nicholas C. Zakas",
       "homepage": "https://github.com/eslint/rewrite/tree/main/packages/core#readme",
@@ -1283,7 +1166,7 @@
     },
     {
       "name": "@eslint/object-schema",
-      "versions": ["2.1.7"],
+      "versions": ["3.0.5"],
       "license": "Apache-2.0",
       "author": "Nicholas C. Zakas",
       "homepage": "https://github.com/eslint/rewrite/tree/main/packages/object-schema#readme",
@@ -1291,7 +1174,7 @@
     },
     {
       "name": "@eslint/plugin-kit",
-      "versions": ["0.4.1"],
+      "versions": ["0.7.3"],
       "license": "Apache-2.0",
       "author": "Nicholas C. Zakas",
       "homepage": "https://github.com/eslint/rewrite/tree/main/packages/plugin-kit#readme",
@@ -1339,7 +1222,7 @@
     },
     {
       "name": "@playwright/test",
-      "versions": ["1.63.0"],
+      "versions": ["1.64.1"],
       "license": "Apache-2.0",
       "author": "Microsoft Corporation",
       "homepage": "https://playwright.dev",
@@ -1355,7 +1238,7 @@
     },
     {
       "name": "eslint-visitor-keys",
-      "versions": ["3.4.3", "4.2.1", "5.0.1"],
+      "versions": ["3.4.3", "5.0.1"],
       "license": "Apache-2.0",
       "author": "Toru Nagashima",
       "homepage": "https://github.com/eslint/js/blob/main/packages/eslint-visitor-keys/README.md",
@@ -1369,7 +1252,7 @@
     },
     {
       "name": "playwright",
-      "versions": ["1.63.0"],
+      "versions": ["1.64.1"],
       "license": "Apache-2.0",
       "author": "Microsoft Corporation",
       "homepage": "https://playwright.dev",
@@ -1377,7 +1260,7 @@
     },
     {
       "name": "playwright-core",
-      "versions": ["1.63.0"],
+      "versions": ["1.64.1"],
       "license": "Apache-2.0",
       "author": "Microsoft Corporation",
       "homepage": "https://playwright.dev",
@@ -1385,7 +1268,7 @@
     },
     {
       "name": "typescript",
-      "versions": ["5.9.3"],
+      "versions": ["6.0.3"],
       "license": "Apache-2.0",
       "author": "Microsoft Corp.",
       "homepage": "https://www.typescriptlang.org/",
@@ -1400,15 +1283,6 @@
       "description": "Validates whether a string matches the production for an XML name or qualified name"
     }
   ],
-  "Python-2.0": [
-    {
-      "name": "argparse",
-      "versions": ["2.0.1"],
-      "license": "Python-2.0",
-      "homepage": "https://github.com/nodeca/argparse#readme",
-      "description": "CLI arguments parser. Native port of python's argparse."
-    }
-  ],
   "BSD-2-Clause": [
     {
       "name": "entities",
@@ -1420,14 +1294,14 @@
     },
     {
       "name": "eslint-scope",
-      "versions": ["8.4.0"],
+      "versions": ["9.1.2"],
       "license": "BSD-2-Clause",
       "homepage": "https://github.com/eslint/js/blob/main/packages/eslint-scope/README.md",
       "description": "ECMAScript scope analyzer for ESLint"
     },
     {
       "name": "espree",
-      "versions": ["10.4.0"],
+      "versions": ["11.2.0"],
       "license": "BSD-2-Clause",
       "author": "Nicholas C. Zakas",
       "homepage": "https://github.com/eslint/js/blob/main/packages/espree/README.md",
@@ -1521,14 +1395,6 @@
       "author": "Isaac Z. Schlueter",
       "homepage": "https://github.com/isaacs/isexe#readme",
       "description": "Minimal module to check if a file is executable."
-    },
-    {
-      "name": "minimatch",
-      "versions": ["3.1.5"],
-      "license": "ISC",
-      "author": "Isaac Z. Schlueter",
-      "homepage": "https://github.com/isaacs/minimatch#readme",
-      "description": "a glob matcher in javascript"
     },
     {
       "name": "picocolors",

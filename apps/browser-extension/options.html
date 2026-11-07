@@ -3,106 +3,257 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Translation Kernel settings</title>
+    <title>Ogleans settings</title>
   </head>
   <body>
     <main class="options">
-      <h1>Translation Kernel</h1>
-      <p class="subtitle">Page translation, under your control.</p>
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Gesture-driven reading</p>
+          <h1>Ogleans</h1>
+          <p class="subtitle">
+            Translation is optional. Gestures and collections work without it.
+          </p>
+        </div>
+        <span class="chip">v0.2.0-alpha.1</span>
+      </header>
       <form id="config">
         <fieldset>
-          <legend>Languages & display</legend>
-          <div class="grid">
+          <legend>Reading and translation</legend>
+          <div class="grid three">
             <label
-              >Source language<input id="source" value="auto" required /></label
-            ><label
-              >Target language<input
-                id="target"
-                value="zh-CN"
-                required /></label
-            ><label
-              >Display<select id="mode">
-                <option value="bilingual">Bilingual</option>
-                <option value="translation">Translation</option>
-                <option value="original">Original</option>
-              </select></label
-            ><label
-              >Translation position<select id="placement">
-                <option value="below">Below original</option>
-                <option value="inline">Inline</option>
-              </select></label
-            >
+              >Translation mode
+              <select id="translation-mode">
+                <option value="built-in">Built-in</option>
+                <option value="external">External / passive</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </label>
+            <label
+              >Distribution strategy
+              <select id="strategy">
+                <option value="round-robin">Round robin</option>
+                <option value="weighted">Weighted</option>
+                <option value="language-aware">Language aware</option>
+                <option value="manual">Manual assignment</option>
+                <option value="primary-fallback">Primary / fallback</option>
+              </select>
+            </label>
+            <label
+              >Global concurrency
+              <input id="global-concurrency" type="number" min="1" max="16" />
+            </label>
           </div>
-        </fieldset>
-        <fieldset>
-          <legend>Translation providers</legend>
-          <p>
-            Add Google (no key), an OpenAI-compatible endpoint, or Ollama.
-            Content is sent only when you start translation.
+          <div class="grid three">
+            <label>Source language<input id="source" /></label>
+            <label>Target language<input id="target" /></label>
+            <label
+              >Retries<input id="retries" type="number" min="0" max="3"
+            /></label>
+          </div>
+          <div class="grid three">
+            <label
+              >Request timeout (ms)
+              <input
+                id="translation-timeout"
+                type="number"
+                min="100"
+                max="120000"
+              />
+            </label>
+            <label
+              >Display
+              <select id="mode">
+                <option value="original">Original</option>
+                <option value="translation">Translation only</option>
+                <option value="bilingual">Bilingual</option>
+              </select>
+            </label>
+            <label
+              >Placement
+              <select id="placement">
+                <option value="below">Below paragraph</option>
+                <option value="inline">Inline</option>
+              </select>
+            </label>
+          </div>
+          <label
+            >Shared terminology context
+            <textarea
+              id="terminology"
+              rows="3"
+              placeholder="One preferred term per line or a short glossary."
+            ></textarea>
+          </label>
+          <label class="check"
+            ><input id="fallback-enabled" type="checkbox" /> Allow
+            retry/fallback to configured fallback providers</label
+          >
+          <p class="hint">
+            External/passive mode disables Ogleans scheduling and never reads
+            another extension's storage, credentials or runtime messages.
+            Built-in translation sends page text only after you explicitly
+            invoke it.
           </p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Providers</legend>
           <div id="providers"></div>
-          <button type="button" id="add-provider">Add provider</button>
+          <div class="buttons">
+            <button type="button" id="add-provider">Add provider</button>
+          </div>
           <div class="grid">
-            <label>Primary<select id="primary"></select></label
-            ><label>Fallback<select id="fallback"></select></label>
+            <label>Primary<select id="primary"></select></label>
+            <label>Fallback<select id="fallback"></select></label>
           </div>
           <p class="hint">
-            Keys stay in local extension storage. They are not encrypted. Only
-            provider origins receive network access when you save.
+            API keys and custom headers stay in the trusted extension worker.
+            Exports redact them.
           </p>
         </fieldset>
+
         <fieldset>
-          <legend>Site rules</legend>
+          <legend>Gestures and keyboard alternatives</legend>
+          <div class="grid three">
+            <label
+              >Mouse trigger
+              <select id="gesture-trigger">
+                <option value="alt-primary">Alt + primary drag</option>
+                <option value="alt-secondary">Alt + secondary drag</option>
+                <option value="primary">Primary drag</option>
+                <option value="secondary">Secondary drag</option>
+              </select>
+            </label>
+            <label
+              >Distance threshold (px)
+              <input id="gesture-threshold" type="number" min="8" max="120" />
+            </label>
+            <label class="check"
+              ><input id="show-handle" type="checkbox" /> Show minimal
+              collection handle</label
+            >
+          </div>
+          <div class="table-head">
+            <span>Sequence</span><span>Action</span><span></span>
+          </div>
+          <div id="gesture-mappings"></div>
+          <div class="buttons">
+            <button type="button" id="add-gesture">Add gesture</button>
+          </div>
+          <div class="table-head">
+            <span>Keyboard</span><span>Action</span><span></span>
+          </div>
+          <div id="keyboard-mappings"></div>
+          <div class="buttons">
+            <button type="button" id="add-keyboard">
+              Add keyboard alternative
+            </button>
+          </div>
+          <p
+            id="gesture-status"
+            class="hint"
+            role="status"
+            aria-live="polite"
+          ></p>
+          <p class="hint">
+            Use comma-separated directions such as <code>up,right</code>.
+            Defaults use Alt + drag; ordinary clicks and right-click context
+            menus are left alone.
+          </p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Collections</legend>
+          <div class="grid two">
+            <label>Bookmark folder<input id="bookmark-folder" /></label>
+            <label>Dictionary URL template<input id="dictionary-url" /></label>
+          </div>
+          <div class="grid two">
+            <label
+              >Dictionary open mode
+              <select id="dictionary-mode">
+                <option value="tab">New tab</option>
+                <option value="window">Popup window</option>
+              </select>
+            </label>
+            <label class="check"
+              ><input id="bookmarks-enabled" type="checkbox" /> Enable native
+              browser bookmark export</label
+            >
+          </div>
+          <div class="buttons">
+            <button type="button" id="enable-bookmarks">
+              Request bookmark permission
+            </button>
+            <button type="button" id="export-collection-json">
+              Backup JSON
+            </button>
+            <button type="button" id="export-collection-markdown">
+              Export Markdown
+            </button>
+            <label class="file-button"
+              >Import collection<input
+                id="import-collection"
+                type="file"
+                accept="application/json,.json"
+            /></label>
+          </div>
+          <p class="hint">
+            Bookmark access is optional and requested only when you enable it.
+            Existing bookmarks are never overwritten or deleted. Ogleans remains
+            the canonical store for notes, tags, anchors and translations.
+          </p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Advanced</legend>
           <label
-            >Rules JSON<textarea
+            >Site rules JSON<textarea
               id="rules"
-              rows="6"
+              rows="5"
               spellcheck="false"
             ></textarea>
           </label>
-          <p class="hint">
-            Each rule has match patterns and optional root, include, exclude
-            selectors.
-          </p>
-        </fieldset>
-        <fieldset>
-          <legend>Custom URL actions</legend>
           <label
-            >Actions JSON<textarea
+            >Custom URL actions JSON<textarea
               id="actions"
               rows="5"
               spellcheck="false"
             ></textarea>
           </label>
-          <p class="hint">
-            Use {text} in the URL. Fields: id, name, urlTemplate, openMode (tab
-            or window). Actions appear in the popup and use selected text.
-          </p>
         </fieldset>
+
         <label
-          >Export selection<select id="export-part">
+          >Export selection
+          <select id="export-part">
             <option value="config">All configuration</option>
+            <option value="translation">Translation</option>
             <option value="providers">Providers</option>
+            <option value="gestures">Gestures</option>
+            <option value="collection">Collections settings</option>
             <option value="rules">Site rules</option>
             <option value="actions">URL actions</option>
-          </select></label
-        >
-        <div class="buttons">
-          <button class="primary">Save settings</button
-          ><button type="button" id="export">Export configuration</button
-          ><label class="file-button"
+          </select>
+        </label>
+        <div class="buttons sticky-actions">
+          <button class="primary">Save settings</button>
+          <button type="button" id="export">Export configuration</button>
+          <label class="file-button"
             >Import configuration<input
-              type="file"
               id="import"
-              accept="application/json,.json" /></label
-          ><button type="button" id="reset">Reset</button>
+              type="file"
+              accept="application/json,.json"
+          /></label>
+          <button type="button" id="reset">Reset settings</button>
         </div>
         <p id="status" role="status" aria-live="polite"></p>
+        <p class="hint">
+          Change global browser shortcuts at
+          <code>chrome://extensions/shortcuts</code>. The collection data is not
+          deleted by Reset settings.
+        </p>
       </form>
-      <p class="hint">
-        Change keyboard shortcuts at chrome://extensions/shortcuts. Export omits
-        API keys and custom headers.
-      </p>
     </main>
     <script type="module" src="/src/options.ts"></script>
   </body>

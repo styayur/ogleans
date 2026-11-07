@@ -14,7 +14,7 @@ export interface KernelEvents {
   'segment.translation.failed': { id: string; error: string };
   'selection.changed': SelectionContext;
   'translation.started': { count: number };
-  'translation.completed': { count: number };
+  'translation.completed': { count: number; failed?: number; total?: number };
   'translation.cancelled': { count: number };
 }
 export class EventBus {

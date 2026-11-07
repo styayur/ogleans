@@ -1,7 +1,7 @@
 {
   "license": "GPL-3.0-or-later",
   "type": "module",
-  "name": "@translation-kernel/browser-extension",
-  "version": "0.1.0",
+  "name": "@ogleans/browser-extension",
+  "version": "0.2.0-alpha.1",
   "private": true
 }

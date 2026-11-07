@@ -1,98 +1,189 @@
-# Translation Kernel
+# Ogleans
 
-轻量的浏览器翻译内核：提取网页文字、切分语义片段、调度翻译提供商，并可逆地呈现双语文本。
+[English](README.md) · [CI](https://github.com/styayur/ogleans/actions) · [路线图](https://github.com/styayur/ogleans/issues/24) · [发布版本](https://github.com/styayur/ogleans/releases)
 
-[English](README.md) · [CI](https://github.com/styayur/translation-kernel/actions) · [v0.1.0](https://github.com/styayur/translation-kernel/releases/tag/v0.1.0) · [交付报告](docs/DELIVERY_REPORT.zh-CN.md)
+**Ogleans 是一个轻量、手势驱动的浏览器阅读层，内置可选的可组合翻译能力，并提供独立的本地文本收藏系统。**
 
-**早期预览版。** 已发布 v0.1.0 Chromium 包，Firefox 交付及所有站点兼容性尚未验证。内核提供原语和 API，外部工具负责工作流；不需要账号或自有后端。
+当前阶段：`v0.2.0-alpha.1`，仅验证 Chromium MV3。Firefox 打包尚未独立验证，因此不宣称支持 Firefox。
 
-![真实 Chromium 新配置中 Translation Kernel v0.1.0 的语言、显示和提供商设置](docs/assets/extension-settings-v0.1.0.png)
+![Ogleans 设置页：翻译模式、提供商策略、手势和收藏设置](docs/assets/extension-settings-v0.2.0-alpha.1.png)
 
-截图来自无 API 密钥的新配置，只证明设置界面，不代表翻译质量。见[捕获步骤](docs/README_SCREENSHOTS.md)。
+![关闭内置翻译时仍可使用的 Ogleans 浮动收藏面板](docs/assets/collection-disabled.png)
 
-## 功能与范围
+截图来自真实的 Chromium 扩展端到端测试环境。
 
-- 纯 TypeScript 内核，文档模型独立于 HTML。
-- 按需运行的 Chromium Manifest V3 扩展、紧凑 popup 与设置页。
-- 版本化 Provider / Action / Event / Document Adapter 契约。
-- 有界上下文、批处理、取消、重试、fallback 和内存 LRU 缓存。
+## 设计目标
 
-PDF、EPUB、OCR、媒体、词汇、账号、同步、TTS/STT、学习、AI 助手及归档属于外部适配器或工具，不是当前内核功能。
+Ogleans 将阅读交互、翻译和收藏明确拆分为三个可独立使用的层：
 
-## 安装 v0.1.0
+1. **手势层**：可配置鼠标手势、浮动控件、键盘替代操作和阅读面板导航。
+2. **翻译层**：可选的段落级多提供商调度，支持并发、速率限制、取消、重试、回退和可逆渲染。
+3. **收藏层**：原文/当前显示文本捕获、W3C 兼容注解、文本锚点、标签、笔记、搜索、导入导出和可选书签导出。
 
-1. 从 [Releases](https://github.com/styayur/translation-kernel/releases) 下载 `translation-kernel-chromium-v0.1.0.zip` 并解压。
-2. 打开 `chrome://extensions`，开启开发者模式，选择 Load unpacked，载入含 `manifest.json` 的文件夹。
-3. 打开设置，设置源/目标语言并保存，以授权配置的提供商来源。
-4. 打开普通 HTTP(S) 文章并点击 Translate；选择 Original / Translation / Bilingual。Restore 移除译文并停止观察。
+翻译引擎是可替换的。用户可以继续使用其他浏览器翻译扩展，选择被动外部模式，或完全关闭 Ogleans 翻译。手势、文本选择、收藏、注解、搜索和导出仍然可用。
 
-不包含 Chrome Web Store 发布。Firefox 只预留架构边界，未验证打包。快捷键 `Alt+T` 翻译、`Alt+R` 恢复、`Alt+B` 切换双语，可在 `chrome://extensions/shortcuts` 修改；使用前在设置中授予提供商权限。浏览器内部页、扩展商店和受限来源无法翻译。
+## 翻译模式
 
-## 提供商、隐私与动作
+| 模式       | Ogleans 内置调度 | 手势 | 收藏 | 文本捕获                                 |
+| ---------- | ---------------- | ---- | ---- | ---------------------------------------- |
+| `built-in` | 启用             | 启用 | 启用 | 可用时保存原文和翻译来源                 |
+| `external` | 关闭             | 启用 | 启用 | 作为“当前显示选择”保存，不假装恢复了原文 |
+| `disabled` | 关闭             | 启用 | 启用 | 捕获页面中的当前选择                     |
 
-| 类型              | URL 示例                           | 限制                                                                      |
-| ----------------- | ---------------------------------- | ------------------------------------------------------------------------- |
-| Google            | `https://translate.googleapis.com` | 无密钥便利端点，非正式稳定 API，不保证可用性或额度                        |
-| OpenAI-compatible | `https://your-provider.example/v1` | `/chat/completions`、模型、可选密钥/自定义 headers/超时；校验 JSON 批结果 |
-| Ollama-compatible | `http://127.0.0.1:11434`           | `/api/chat` 和 JSON 输出；本地服务可能需调整 origin/CORS                  |
+Ogleans 不会读取其他扩展的存储、凭据或私有运行时消息。浏览器扩展之间没有通用的翻译控制 API，因此外部兼容性采用被动共存模式。详见[外部翻译模式](docs/external-translation.md)。
 
-提供商是应用组合的独立示例模块，核心没有厂商专用联网代码。v0.1 使用非流式批次；每个失败批次重试一次，再交给 fallback。Google 端点缺乏稳定批契约，因此内部逐片顺序请求。
+## 核心能力
 
-只有请求翻译后，网页文本及有界标题上下文才发给所选提供商。除 loopback HTTP 外要求 HTTPS。密钥保存在本地、未加密，内容脚本无法读取；导出省略密钥与全部自定义 headers。提供商输出作为纯文字呈现，不执行其标记。没有遥测、远程代码或持久页面历史。
+- 无边框浮动选择工具条和轻量收藏入口。
+- 可配置手势注册表、冲突检测和键盘替代操作。
+- 区分有意图的手势与普通点击。
+- 默认不拦截右键菜单；只有用户显式配置右键手势并完成有意图的移动后才抑制该次菜单。
+- 多提供商并行段落调度，同时保留原始段落顺序。
+- 轮询、加权、语言感知、手动分配和主/回退策略。
+- 全局并发、提供商并发、请求窗口、超时、重试、回退和取消。
+- 部分结果实时渲染，单个提供商失败不会清空其他成功结果。
+- 有界缓存，缓存键包含源/目标语言、术语上下文和原文。
+- 独立收藏存储，兼容 W3C Web Annotation 结构。
+- TextQuoteSelector、TextPositionSelector 和 Text Fragment 导航。
+- 搜索、标签、笔记、编辑、删除、JSON 导入导出和 Markdown 导出。
+- 可选浏览器书签导出，保留已有书签且不删除任何书签。
+- 无权限依赖的 HTML 书签文件回退。
+- v1 配置迁移和旧收藏键迁移。
 
-导入使用 `schemaVersion: 1`，先暂存审阅，点击 Save settings 后校验并请求权限。可导出全部配置、提供商、站点规则或 URL 动作，对应 `config.json` / `providers.json` / `rules.json` / `actions.json`；导入局部文件只更新其范围。密钥和 headers 不导出，需重新输入。Reset 恢复默认值。
+## 默认手势
 
-将以下数组粘贴到 Actions JSON，可添加选中文字后打开的词典动作：
+鼠标触发：**Alt + 主键拖动**，可在设置中修改。
 
-```json
-[
-  {
-    "id": "wiktionary",
-    "name": "Wiktionary",
-    "urlTemplate": "https://en.wiktionary.org/wiki/{text}",
-    "openMode": "tab"
-  }
-]
-```
+| 手势             | 操作                |
+| ---------------- | ------------------- |
+| `up`             | 保存选择            |
+| `down`           | 打开收藏            |
+| `left` / `right` | 上一条 / 下一条收藏 |
+| `up,right`       | 切换内置翻译        |
+| `right,up`       | 切换显示模式        |
+| `down,right`     | 恢复原文            |
+| `down,left`      | 打开词典            |
+| `left,right`     | 隐藏面板            |
 
-模板限 HTTP(S)，文字按 URL 编码。内核只打开 URL，不保证外部网站的查询行为。
+键盘替代：
 
-## 开发与测试
+| 快捷键                               | 操作            |
+| ------------------------------------ | --------------- |
+| `Alt+Shift+S`                        | 保存选择        |
+| `Alt+Shift+C`                        | 打开收藏        |
+| `Alt+Shift+Left` / `Alt+Shift+Right` | 上一条 / 下一条 |
+| `Alt+Shift+T`                        | 切换内置翻译    |
+| `Alt+Shift+M`                        | 切换显示模式    |
+| `Alt+Shift+R`                        | 恢复原文        |
+| `Alt+Shift+D`                        | 打开词典        |
+| `Alt+Shift+H`                        | 隐藏面板        |
+| `Escape`                             | 关闭收藏面板    |
 
-使用 Node.js 24+（CI 版本）和 pnpm 12.4.2；源码清单声明最低 Node 22.12，CI 验证 Node.js 24。
+全局浏览器快捷键可在 `chrome://extensions/shortcuts` 修改。
+
+## 多提供商并发
+
+调度器为每个段落只分配一个提供商，不会在未声明比较模式时同时向多个提供商发送同一段落。失败后按配置顺序进行重试和回退。全局并发信号量和提供商请求窗口限制网络请求数量。完成结果可以先渲染，但最终顺序始终与原文一致。
+
+支持：
+
+- 轮询：`round-robin`
+- 平滑加权轮询：`weighted`
+- 语言感知：`language-aware`
+- 手动分配：`manual`
+- 主提供商与回退：`primary-fallback`
+
+详见[提供商调度规范](docs/provider-scheduling.md)。
+
+## 收藏数据
+
+每个收藏条目保存：
+
+- 稳定 ID
+- 当前选择文本和可用的原文
+- 来源 URL、标题、作者和源语言
+- 翻译文本与提供商来源
+- 文本锚点和 Text Fragment
+- 标签、笔记、创建/更新时间
+- W3C 兼容注解对象
+- 书签导出元数据
+
+如果文本来自翻译层，或被其他扩展改写而无法确认原文，条目会明确记录为“显示选择/显示翻译”，而不是声称保存了原文。页面内容改变后锚点可能失效，Ogleans 会显示此限制，不会承诺所有旧锚点永远可恢复。
+
+详见[收藏结构](docs/collection-schema.md)和[注解与锚点规范](docs/annotation-anchors.md)。
+
+## 安全与隐私
+
+- 提供商密钥和自定义请求头仅存在于受信任的扩展 worker 中。
+- 内容脚本永远接收不到密钥。
+- 只有用户明确触发翻译时，页面段落才会发送到提供商。
+- 提供商请求拒绝重定向，不携带浏览器凭据。
+- 翻译结果只以文本渲染，不作为 HTML 执行。
+- 收藏数据默认仅保存在本地扩展存储中。
+- 导出内容不包含提供商密钥或自定义秘密请求头。
+- 浏览器书签权限为可选权限，仅在用户启用或执行相关操作时请求。
+- 不申请持久全站访问权限；提供商来源保持为可选权限。
+- 不包含遥测、云同步或远程代码。
+
+详见[SECURITY.md](SECURITY.md)和[许可证边界](docs/licensing.md)。
+
+## 安装
+
+1. 从[发布页](https://github.com/styayur/ogleans/releases)下载 `ogleans-chromium-v0.2.0-alpha.1.zip`。
+2. 解压后打开 `chrome://extensions`。
+3. 开启开发者模式，选择“加载已解压的扩展程序”。
+4. 选择包含 `manifest.json` 的目录。
+5. 在设置中选择翻译模式、提供商策略和手势。
+6. 打开普通 HTTP(S) 文章，通过扩展弹窗、快捷键或手势激活 Ogleans。
+
+当前 alpha 不包含 Chrome Web Store 上架。受限浏览器页面无法使用。
+
+## 开发与验证
 
 ```sh
-git clone https://github.com/styayur/translation-kernel.git
-cd translation-kernel
 pnpm install
 pnpm exec playwright install chromium
 pnpm check
+pnpm format:check
 pnpm benchmark
-pnpm package
 ```
 
-`pnpm check` 包含 lint、严格类型检查、unit/DOM、构建、示例和真实扩展 E2E；CI 另检查格式和依赖告警。E2E 使用确定性本地 HTTP 提供商，无密钥或付费服务。Linux 可用 `pnpm exec playwright install --with-deps chromium` 安装浏览器依赖；诊断可用 `TK_CHROMIUM_PATH` 指向现有 Chromium。
+`pnpm check` 包括 lint、严格类型检查、单元/DOM/生命周期测试、生产构建、SDK/示例验证和真实 Chromium 扩展 E2E 测试。
 
-输出为 `dist/chromium/` 扩展、`dist/sdk/` ESM SDK、`release/` ZIP 和 SHA-256。运行时依赖为零；测量与限制见[验证说明](docs/verification.md)和[基准数据](docs/benchmark.json)。
+## 迁移
 
-## 架构与 API
+- `schemaVersion: 1` 配置会自动迁移到 v2。
+- 原有语言、显示模式、提供商、站点规则和 URL 操作继续保留。
+- 如果存在旧收藏存储键，会自动读取。
+- 如果移动未打包扩展的目录，Chrome 扩展 ID 可能变化；建议先导出配置和收藏备份。
+- 翻译生成节点不会持久化，不需要迁移。
 
-应用在 `apps/browser-extension/`，可复用模块位于 `packages/`，示例在 `examples/`，unit/DOM/Chromium E2E 在 `tests/`。[英文架构图](README.md#architecture)是唯一维护图源。
+详见[v0.2 迁移指南](docs/migration-v0.2.md)。
 
-HtmlAdapter 按站点规则扫描、切分并观察 DOM；内核每批最多 16 片段，译文仅内存缓存。内容桥通过 runtime message 向 worker 发批次和取消请求；worker 校验扩展身份、顶层来源、批大小和请求 ID，再调用提供商。密钥留在可信扩展上下文，未加密保存。DomRenderer 用 `textContent` 呈现结果；Restore 中止任务、断开观察并恢复原文，不是持久历史系统。独立 SDK 使用者提供自己的 DocumentAdapter 和 ProviderRouter，不需要扩展 worker。
+## 兼容性与限制
 
-见[架构](ARCHITECTURE.md)、[源码依据](docs/architecture/README.md)、[Provider](docs/provider-api.md)、[Action](docs/action-api.md)、[Event](docs/event-api.md)、[Adapter](docs/adapter-api.md)及[站点规则](docs/site-rules.md)。
+- 已验证：Chromium 120+。
+- Firefox 打包未验证，不做支持承诺。
+- 无法通用控制其他翻译扩展；Ogleans 提供被动共存，不读取私有接口。
+- 当前页面适配器不处理跨域 iframe 和 shadow root。
+- 页面任意变化后，文本锚点无法保证精确恢复。
+- 翻译质量、可用性和费用由提供商决定。
+- 图片、PDF、EPUB、OCR、音视频、AI 聊天、账号、词汇学习和云同步不在范围内。
 
-## 限制、后续工作与贡献
+## 文档
 
-当前非流式、密钥本地未加密，并依赖按需 Chromium 权限；受限页面不可翻译。提供商的可用性、质量和费用不由内核保证。流式适配器和 Firefox 打包属于后续集成，不是当前交付。
-
-PR 请阅读[贡献指南](CONTRIBUTING.md)，运行 `pnpm check` 与 `pnpm format:check`。通过 [Issues](https://github.com/styayur/translation-kernel/issues) 提供小型本地复现及预期恢复行为，不提交密钥、真实浏览内容或付费服务测试数据。
+- [架构](ARCHITECTURE.md)
+- [手势 API](docs/gesture-api.md)
+- [提供商调度](docs/provider-scheduling.md)
+- [外部翻译模式](docs/external-translation.md)
+- [收藏结构](docs/collection-schema.md)
+- [注解与锚点](docs/annotation-anchors.md)
+- [浏览器书签集成](docs/bookmark-integration.md)
+- [迁移指南](docs/migration-v0.2.md)
+- [浏览器 E2E 报告](docs/e2e-report.md)
+- [性能](docs/performance.md)
+- [验证记录](docs/verification.md)
 
 ## 许可证
 
-- 可复用内核、SDK、示例模块、文档及测试/构建支持使用 [MPL-2.0](LICENSE)。文档随软件分发；文件级 copyleft 保留被修改的引擎文件要求。
-- 浏览器应用 `apps/browser-extension/` 及其组合分发为 [GPL-3.0-or-later](apps/browser-extension/LICENSE)。其中 MPL 文件源码仍保留 MPL；组合分发按 MPL 2.0 §3.3 处理，并非整个应用都只有 MPL。
-- 第三方依赖保留原许可，见 [NOTICE](NOTICE)、[THIRD_PARTY.md](THIRD_PARTY.md)和[许可边界](docs/licensing.md)。独立工具可选择自己的条款，但须遵守复制或组合文件的许可。
-
-项目遵循 [styayur 许可政策](https://github.com/styayur/styayur/blob/main/LICENSE_POLICY.md)，本次文档治理不改变许可。
+可复用包、SDK、示例、文档和测试/构建支持采用 **MPL-2.0**。`apps/browser-extension/` 下的浏览器应用及分发包采用 **GPL-3.0-or-later**。第三方依赖保留其原始许可证。详见 [NOTICE](NOTICE)、[THIRD_PARTY.md](THIRD_PARTY.md) 和[许可证边界](docs/licensing.md)。

@@ -63,5 +63,7 @@
       "status": "passed",
       "pageErrors": []
     }
-  ]
+  ],
+  "scope": "Translation Kernel v0.1.0 historical live-provider record",
+  "v0.2Note": "Ogleans v0.2.0-alpha.1 uses deterministic local-provider Chromium E2E for release gating; this historical live-service record is not a v0.2 provider-quality claim."
 }

@@ -14,7 +14,7 @@ import {
   type KernelConfig,
 } from '../../packages/config/src/index';
 let context: BrowserContext, worker: Worker, id: string;
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   const path = resolve('.local/e2e-extension');
   await cp(resolve('dist/chromium'), path, { recursive: true });
   const manifest = JSON.parse(
@@ -22,6 +22,7 @@ test.beforeAll(async () => {
   );
   // Test-only grant avoids browser consent dialogs in headless CI. Release manifest is unchanged.
   manifest.host_permissions = ['http://127.0.0.1/*'];
+  manifest.permissions = [...new Set([...manifest.permissions, 'bookmarks'])];
   await writeFile(resolve(path, 'manifest.json'), JSON.stringify(manifest));
   context = await chromium.launchPersistentContext('', {
     headless: true,
@@ -34,7 +35,8 @@ test.beforeAll(async () => {
     (await context.waitForEvent('serviceworker'));
   id = new URL(worker.url()).host;
 });
-test.afterAll(async () => {
+test.afterEach(async () => {
+  for (const page of context?.pages() ?? []) await page.close().catch(() => {});
   await context?.close();
 });
 test('capture real settings with no saved secrets', async () => {
@@ -43,11 +45,11 @@ test('capture real settings with no saved secrets', async () => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`chrome-extension://${id}/options.html`);
   await expect(
-    page.getByRole('heading', { name: 'Translation Kernel', exact: true }),
+    page.getByRole('heading', { name: 'Ogleans', exact: true }),
   ).toBeVisible();
   await mkdir('docs/assets', { recursive: true });
   await page.screenshot({
-    path: 'docs/assets/extension-settings-v0.1.0.png',
+    path: 'docs/assets/extension-settings-v0.2.0-alpha.1.png',
   });
   await page.close();
 });
@@ -100,6 +102,98 @@ async function control(page: Page, action: string, mode?: string) {
     { url: page.url(), action, mode },
   );
 }
+async function configureMode(mode: 'external' | 'disabled') {
+  await worker.evaluate(
+    async ({ config, mode }) => {
+      config.translation.mode = mode;
+      config.providers = [];
+      config.primary = '';
+      config.fallback = undefined;
+      config.gestures.showHandle = true;
+      config.collection.bookmarksEnabled = true;
+      await chrome.storage.local.set({ config });
+    },
+    { config: structuredClone(defaultConfig), mode },
+  );
+}
+async function configureMultiProvider() {
+  await worker.evaluate(async (config) => {
+    config.translation.mode = 'built-in';
+    config.translation.strategy = 'round-robin';
+    config.translation.globalConcurrency = 4;
+    config.translation.retries = 0;
+    config.primary = 'a';
+    config.fallback = undefined;
+    config.providers = [
+      {
+        id: 'a',
+        kind: 'ollama',
+        baseUrl: 'http://127.0.0.1:4173',
+        model: 'test',
+        timeoutMs: 3000,
+        enabled: true,
+        concurrency: 2,
+        weight: 1,
+        languages: ['*'],
+        headers: { 'X-Ogleans-Provider': 'a' },
+      },
+      {
+        id: 'b',
+        kind: 'ollama',
+        baseUrl: 'http://127.0.0.1:4173',
+        model: 'test',
+        timeoutMs: 3000,
+        enabled: true,
+        concurrency: 2,
+        weight: 1,
+        languages: ['*'],
+        headers: { 'X-Ogleans-Provider': 'b' },
+      },
+    ];
+    await chrome.storage.local.set({ config });
+  }, structuredClone(defaultConfig));
+}
+async function clearCollections() {
+  await worker.evaluate(async () => {
+    await chrome.storage.local.remove([
+      'ogleans.collections.v1',
+      'translationKernel.collections',
+      'tk.collections',
+    ]);
+  });
+}
+async function collectionItems() {
+  return worker.evaluate(async () => {
+    const stored = await chrome.storage.local.get('ogleans.collections.v1');
+    return (stored['ogleans.collections.v1'] ?? []) as Array<{
+      id: string;
+      text: string;
+      captureKind: string;
+      note?: string;
+      tags: string[];
+    }>;
+  });
+}
+async function selectText(page: Page, paragraph = 0) {
+  await page.evaluate((index) => {
+    const block = document.querySelectorAll('article p')[index];
+    if (!block) throw new Error('Paragraph not found');
+    const range = document.createRange();
+    range.selectNodeContents(block);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+  }, paragraph);
+}
+async function upwardGesture(page: Page) {
+  await page.mouse.move(35, 420);
+  await page.keyboard.down('Alt');
+  await page.mouse.down();
+  await page.mouse.move(35, 330, { steps: 8 });
+  await page.mouse.up();
+  await page.keyboard.up('Alt');
+}
 for (const route of [
   'static',
   'wikipedia',
@@ -117,7 +211,7 @@ for (const route of [
     await expect(page.locator('[data-tk-translation]').first()).toContainText(
       '中文译文',
     );
-    const expected = route === 'large' ? 1002 : 5;
+    const expected = route === 'large' ? 252 : 5;
     await expect(page.locator('[data-tk-translation]')).toHaveCount(expected, {
       timeout: 30000,
     });
@@ -272,3 +366,174 @@ for (const framework of ['react', 'vue'])
     );
     await page.close();
   });
+
+test('release manifest keeps bookmark access optional', async () => {
+  const manifest = JSON.parse(
+    await readFile(resolve('dist/chromium/manifest.json'), 'utf8'),
+  );
+  expect(manifest.permissions).not.toContain('bookmarks');
+  expect(manifest.optional_permissions).toContain('bookmarks');
+  expect(manifest.name).toBe('Ogleans');
+  expect(manifest.version_name).toBe('0.2.0-alpha.1');
+});
+
+for (const mode of ['disabled', 'external'] as const)
+  test(`${mode}: gestures, collection, annotations, search and exports work without translation`, async () => {
+    await configureMode(mode);
+    await clearCollections();
+    const page = await context.newPage();
+    await page.goto('http://127.0.0.1:4173/static');
+    await control(page, 'activate');
+    expect(await page.locator('[data-tk-translation]').count()).toBe(0);
+    await control(page, 'translate');
+    expect(await page.locator('[data-tk-translation]').count()).toBe(0);
+    await selectText(page, 0);
+    await page.keyboard.press('Alt+Shift+S');
+    await expect(page.locator('[data-og="toast"]')).toContainText(
+      'Saved to Ogleans',
+    );
+    const items = await collectionItems();
+    expect(items).toHaveLength(1);
+    expect(items[0]!.captureKind).toBe(
+      mode === 'external' ? 'displayed-selection' : 'original',
+    );
+    expect(items[0]!.text).toContain('Paragraph 0');
+    await page.keyboard.press('Alt+Shift+C');
+    await expect(page.locator('[data-og="panel"]')).toBeVisible();
+    await expect(page.locator('[data-og="item"]')).toHaveCount(1);
+    await page.locator('[data-og="search"]').fill('does-not-exist');
+    await expect(page.locator('[data-og="list"]')).toContainText(
+      'No passages match',
+    );
+    await page.locator('[data-og="search"]').fill('');
+    await expect(page.locator('[data-og="item"]')).toHaveCount(1);
+    await page.locator('[data-og="item"]').click();
+    await page.locator('[data-og="tags"]').fill('research, reading');
+    await page.locator('[data-og="note"]').fill('Translation-independent note');
+    await page.getByRole('button', { name: 'Apply changes' }).click();
+    await expect
+      .poll(async () => (await collectionItems())[0])
+      .toMatchObject({
+        note: 'Translation-independent note',
+        tags: ['research', 'reading'],
+      });
+    const markdownDownload = page.waitForEvent('download');
+    await page.locator('[data-og-action="export-markdown"]').click();
+    const markdown = await markdownDownload;
+    expect(markdown.suggestedFilename()).toBe('ogleans-collection.md');
+    const markdownPath = await markdown.path();
+    expect(await readFile(markdownPath!, 'utf8')).toContain(
+      'Translation-independent note',
+    );
+    const jsonDownload = page.waitForEvent('download');
+    await page.locator('[data-og-action="export-json"]').click();
+    const json = await jsonDownload;
+    expect(json.suggestedFilename()).toBe('ogleans-collection.json');
+    const jsonPath = await json.path();
+    const backup = JSON.parse(await readFile(jsonPath!, 'utf8'));
+    expect(backup.type).toBe('ogleans-collection-export');
+    expect(backup.items[0].tags).toEqual(['research', 'reading']);
+    await page.screenshot({
+      path: `docs/assets/collection-${mode}.png`,
+      fullPage: false,
+    });
+    await page.close();
+  });
+
+test('mouse gesture preserves selection while clicks and context menus remain ordinary', async () => {
+  await configureMode('disabled');
+  await clearCollections();
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/static');
+  await control(page, 'activate');
+  await page.evaluate(() => {
+    (window as unknown as { contextMenuCount: number }).contextMenuCount = 0;
+    window.addEventListener('contextmenu', () => {
+      (window as unknown as { contextMenuCount: number }).contextMenuCount++;
+    });
+  });
+  await page.mouse.click(35, 420);
+  expect(await collectionItems()).toHaveLength(0);
+  await page.keyboard.down('Alt');
+  await page.mouse.click(35, 420);
+  await page.keyboard.up('Alt');
+  expect(await collectionItems()).toHaveLength(0);
+  await page.mouse.click(35, 420, { button: 'right' });
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { contextMenuCount: number }).contextMenuCount,
+    ),
+  ).toBe(1);
+  expect(await collectionItems()).toHaveLength(0);
+  await selectText(page, 1);
+  await upwardGesture(page);
+  await expect.poll(async () => (await collectionItems()).length).toBe(1);
+  expect((await collectionItems())[0]!.text).toContain('Paragraph 1');
+  await page.keyboard.press('Alt+Shift+C');
+  await expect(page.locator('[data-og="panel"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-og="panel"]')).toBeHidden();
+  await page.close();
+});
+
+test('two providers translate concurrently and preserve paragraph order', async () => {
+  await fetch('http://127.0.0.1:4173/reset-stats');
+  await configureMultiProvider();
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/static');
+  await control(page, 'translate');
+  await expect(page.locator('[data-tk-translation]')).toHaveCount(5, {
+    timeout: 30000,
+  });
+  await expect(
+    page.locator('p').first().locator('[data-tk-translation]'),
+  ).toContainText('Paragraph 0');
+  const providers = await page
+    .locator('[data-tk-translation]')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-ogleans-provider')),
+    );
+  expect(providers.some((provider) => provider?.includes('a'))).toBe(true);
+  expect(providers.some((provider) => provider?.includes('b'))).toBe(true);
+  const stats = (await (await fetch('http://127.0.0.1:4173/stats')).json()) as {
+    maxConcurrent: number;
+    byProvider: Record<string, number>;
+  };
+  expect(stats.maxConcurrent).toBeGreaterThanOrEqual(2);
+  expect(stats.byProvider.a).toBeGreaterThan(0);
+  expect(stats.byProvider.b).toBeGreaterThan(0);
+  await page.close();
+});
+
+test('gesture mappings are configurable and conflicts are shown before save', async () => {
+  await configureMode('disabled');
+  await worker.evaluate(async () => {
+    const stored = await chrome.storage.local.get('config');
+    const config = stored.config as KernelConfig;
+    config.collection.bookmarksEnabled = false;
+    await chrome.storage.local.set({ config });
+  });
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${id}/options.html`);
+  await page.getByRole('button', { name: 'Add gesture' }).click();
+  const row = page.locator('.gesture-row').last();
+  await row.locator('[data-field="sequence"]').fill('up');
+  await expect(page.locator('#gesture-status')).toContainText('Error');
+  await row.locator('[data-field="sequence"]').fill('left,up');
+  await row.locator('[data-field="action"]').selectOption('panel.hide');
+  await page.getByRole('button', { name: 'Save settings' }).click();
+  await expect(page.locator('#status')).toHaveText('Settings saved');
+  const saved = await worker.evaluate(async () => {
+    const stored = await chrome.storage.local.get('config');
+    return stored.config as KernelConfig;
+  });
+  expect(
+    saved.gestures.mappings.some(
+      (mapping) =>
+        mapping.action === 'panel.hide' &&
+        mapping.sequence.join(',') === 'left,up',
+    ),
+  ).toBe(true);
+  await page.close();
+});

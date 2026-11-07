@@ -11,6 +11,7 @@ export interface DomAnchor {
 export class DomRenderer {
   private translations = new Map<string, HTMLElement>();
   private values = new Map<string, string>();
+  private providers = new Map<string, string>();
   private originals = new Map<Text, string>();
   private segmentAnchors = new Map<string, DomAnchor>();
   private mode?: RenderMode;
@@ -38,13 +39,16 @@ export class DomRenderer {
     mode: RenderMode,
     placement: 'below' | 'inline' = 'below',
   ): void {
-    results.forEach((r) => this.values.set(r.id, r.text));
+    results.forEach((result) => {
+      this.values.set(result.id, result.text);
+      if (result.provider) this.providers.set(result.id, result.provider);
+    });
     const affected =
       mode !== this.mode || placement !== this.placement
         ? this.anchors.values()
         : new Set(
-            results.flatMap((r) => {
-              const anchor = this.segmentAnchors.get(r.id);
+            results.flatMap((result) => {
+              const anchor = this.segmentAnchors.get(result.id);
               return anchor ? [anchor] : [];
             }),
           );
@@ -61,14 +65,28 @@ export class DomRenderer {
       }
       if (!translated || !translated.isConnected) {
         translated = anchor.block.ownerDocument.createElement('span');
+        translated.setAttribute('data-ogleans-translation', '');
         translated.setAttribute('data-tk-translation', '');
+        translated.setAttribute('data-ogleans-segment-id', anchor.id);
         translated.setAttribute('data-tk-segment-id', anchor.id);
+        translated.setAttribute('data-ogleans-block-id', anchor.id);
+        translated.setAttribute('role', 'text');
         anchor.block.append(translated);
         this.translations.set(anchor.id, translated);
       }
       translated.textContent = anchor.segmentIds
         .map((id) => this.values.get(id))
         .join(' ');
+      const providers = [
+        ...new Set(
+          anchor.segmentIds
+            .map((id) => this.providers.get(id))
+            .filter((value): value is string => !!value),
+        ),
+      ];
+      if (providers.length)
+        translated.setAttribute('data-ogleans-provider', providers.join(','));
+      else translated.removeAttribute('data-ogleans-provider');
       translated.style.cssText = `display:${placement === 'below' ? 'block' : 'inline'};white-space:pre-wrap;line-height:inherit;color:inherit;opacity:.9;${placement === 'below' ? 'margin-block-start:.35em' : 'margin-inline-start:.5em'}`;
       if (mode === 'translation')
         for (const node of anchor.nodes) {
@@ -93,15 +111,18 @@ export class DomRenderer {
     this.translations.delete(anchor.id);
     anchor.segmentIds.forEach((id) => {
       this.values.delete(id);
+      this.providers.delete(id);
       this.segmentAnchors.delete(id);
     });
   }
   prune(): void {
     const ids = new Set(
-      [...this.anchors.values()].flatMap((a) => a.segmentIds),
+      [...this.anchors.values()].flatMap((anchor) => anchor.segmentIds),
     );
     for (const id of this.values.keys())
       if (!ids.has(id)) this.values.delete(id);
+    for (const id of this.providers.keys())
+      if (!ids.has(id)) this.providers.delete(id);
     for (const [id, node] of this.translations)
       if (!this.anchors.has(id) || !node.isConnected) {
         node.remove();
@@ -115,6 +136,7 @@ export class DomRenderer {
     for (const node of this.translations.values()) node.remove();
     this.translations.clear();
     this.values.clear();
+    this.providers.clear();
     this.originals.clear();
     this.mode = undefined;
     this.placement = undefined;

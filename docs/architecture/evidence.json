@@ -1,11 +1,40 @@
 {
-  "source_commit": "6a221457670b7a3871d00ff4ca40ae8952d32252",
-  "reviewed_on": "2026-10-09",
+  "source_commit": "pending v0.2.0-alpha.1 release commit",
+  "reviewed_on": "2026-11-07",
   "diagram_source": "README.md",
   "sources": [
     {
-      "path": "packages/core/src/index.ts",
-      "anchors": ["class TranslationKernel", "restore(): void", "offset += 16"]
+      "path": "packages/gesture/src/index.ts",
+      "anchors": [
+        "class GestureRecognizer",
+        "detectGestureConflicts",
+        "keyboardMatches"
+      ]
+    },
+    {
+      "path": "packages/scheduler/src/index.ts",
+      "anchors": [
+        "class MultiProviderScheduler",
+        "class WindowRateLimiter",
+        "class Semaphore"
+      ]
+    },
+    {
+      "path": "packages/translation/src/index.ts",
+      "anchors": [
+        "class TranslationEngine",
+        "interface TranslationTransport",
+        "createSchedulerTransport"
+      ]
+    },
+    {
+      "path": "packages/collection/src/index.ts",
+      "anchors": [
+        "class CollectionStore",
+        "createTextAnchor",
+        "resolveTextAnchor",
+        "annotationFor"
+      ]
     },
     {
       "path": "packages/dom/src/index.ts",
@@ -13,27 +42,37 @@
     },
     {
       "path": "packages/renderer/src/index.ts",
-      "anchors": [
-        "class DomRenderer",
-        "translated.textContent",
-        "restore(): void"
-      ]
-    },
-    {
-      "path": "packages/provider-api/src/index.ts",
-      "anchors": ["class ProviderRouter"]
-    },
-    {
-      "path": "apps/browser-extension/src/content.ts",
-      "anchors": ["translate.cancel", "config.public"]
+      "anchors": ["class DomRenderer", "data-ogleans-translation"]
     },
     {
       "path": "apps/browser-extension/src/background.ts",
-      "anchors": ["TRUSTED_CONTEXTS", "sender.frameId !== 0", "retries: 1"]
+      "anchors": [
+        "TRUSTED_CONTEXTS",
+        "sender.frameId === 0",
+        "chrome.runtime.onConnect",
+        "exportBookmarks"
+      ]
     },
     {
-      "path": "tests/unit/lifecycle.test.ts",
-      "anchors": ["restore"]
+      "path": "apps/browser-extension/src/content.ts",
+      "anchors": [
+        "class OgleansUI",
+        "selectionSnapshot",
+        "collection.create",
+        "ogleans.translation"
+      ]
+    },
+    {
+      "path": "tests/e2e/extension.spec.ts",
+      "anchors": [
+        "for (const mode of ['disabled', 'external']",
+        "two providers",
+        "mouse gesture"
+      ]
+    },
+    {
+      "path": "tests/e2e/bookmarks.spec.ts",
+      "anchors": ["Existing bookmark", "HTML bookmark", "bookmarks"]
     }
   ]
 }

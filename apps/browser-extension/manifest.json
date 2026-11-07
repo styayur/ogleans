@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Translation Kernel",
-  "version": "0.1.0",
-  "description": "A small translation kernel: semantic text, pluggable providers, reversible bilingual rendering.",
+  "name": "Ogleans",
+  "version": "0.2.0",
+  "version_name": "0.2.0-alpha.1",
+  "description": "A gesture-driven reading layer with optional composable translation and independent local collections.",
   "minimum_chrome_version": "120",
   "permissions": ["activeTab", "scripting", "storage"],
+  "optional_permissions": ["bookmarks"],
   "optional_host_permissions": [
     "https://*/*",
     "http://localhost/*",
@@ -14,17 +16,24 @@
   "action": { "default_popup": "popup.html" },
   "options_page": "options.html",
   "commands": {
+    "activate": {
+      "suggested_key": { "default": "Alt+G" },
+      "description": "Activate Ogleans reading layer"
+    },
+    "collection": {
+      "suggested_key": { "default": "Alt+C" },
+      "description": "Open Ogleans collection"
+    },
+    "save": {
+      "suggested_key": { "default": "Alt+S" },
+      "description": "Save selected text"
+    },
     "translate": {
       "suggested_key": { "default": "Alt+T" },
-      "description": "Translate page"
+      "description": "Translate page with Ogleans"
     },
     "restore": {
-      "suggested_key": { "default": "Alt+R" },
-      "description": "Restore page"
-    },
-    "bilingual": {
-      "suggested_key": { "default": "Alt+B" },
-      "description": "Toggle bilingual"
+      "description": "Restore Ogleans translation"
     }
   },
   "content_security_policy": {

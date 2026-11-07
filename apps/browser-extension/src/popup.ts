@@ -1,79 +1,120 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import './ui.css';
-const status = document.querySelector<HTMLElement>('#status')!;
-let providerOrigins: string[] = [];
+import type { KernelConfig } from '../../../packages/config/src/index';
+const statusNode = document.querySelector<HTMLElement>('#status')!;
+const modeSelect = document.querySelector<HTMLSelectElement>('#mode')!;
+const translationMode =
+  document.querySelector<HTMLElement>('#translation-mode')!;
 const translateButton = document.getElementById(
   'translate',
 ) as HTMLButtonElement;
-translateButton.disabled = true;
-async function command(action: string, mode?: string): Promise<void> {
+const stopButton = document.getElementById('stop') as HTMLButtonElement;
+const restoreButton = document.getElementById('restore') as HTMLButtonElement;
+let providerOrigins: string[] = [];
+let config: KernelConfig;
+async function control(
+  action: string,
+  mode?: string,
+): Promise<Record<string, unknown>> {
+  const reply = await chrome.runtime.sendMessage({
+    kind: 'control',
+    action,
+    mode,
+  });
+  if (!reply.ok) throw new Error(reply.error);
+  return reply.result as Record<string, unknown>;
+}
+function updateStatus(result: Record<string, unknown>): void {
+  statusNode.textContent = String(result.status ?? 'Ready');
+  if (typeof result.mode === 'string') modeSelect.value = result.mode;
+  if (typeof result.translationMode === 'string')
+    translationMode.textContent =
+      result.translationMode === 'built-in'
+        ? 'Built-in'
+        : result.translationMode === 'external'
+          ? 'External'
+          : 'Off';
+}
+async function run(action: string): Promise<void> {
   try {
-    const reply = await chrome.runtime.sendMessage({
-      kind: 'control',
-      action,
-      mode,
-    });
-    if (!reply.ok) throw new Error(reply.error);
-    status.textContent = reply.result.status;
-    document.querySelector<HTMLSelectElement>('#mode')!.value =
-      reply.result.mode;
+    updateStatus(await control(action));
   } catch (error) {
-    status.textContent = (error as Error).message;
+    statusNode.textContent =
+      error instanceof Error ? error.message : 'Ogleans request failed';
   }
 }
-for (const action of ['translate', 'stop', 'restore'])
-  document.getElementById(action)!.addEventListener('click', () => {
-    if (action !== 'translate') {
-      void command(action);
-      return;
-    }
-    void chrome.permissions
-      .request({ origins: providerOrigins })
-      .then(async (granted) => {
-        if (!granted) throw new Error('Provider permission denied');
-        await command(action);
-      })
-      .catch((error) => {
-        status.textContent = error.message;
-      });
-  });
 document
-  .getElementById('mode')!
-  .addEventListener(
-    'change',
-    (event) => void command('mode', (event.target as HTMLSelectElement).value),
-  );
+  .getElementById('collections')!
+  .addEventListener('click', () => void run('collection.open'));
 document
   .getElementById('settings')!
   .addEventListener('click', () => void chrome.runtime.openOptionsPage());
+document.getElementById('translate')!.addEventListener('click', () => {
+  if (config?.translation.mode !== 'built-in') {
+    statusNode.textContent =
+      'Built-in translation is disabled. Gestures and collections remain available.';
+    return;
+  }
+  void chrome.permissions
+    .request({ origins: providerOrigins })
+    .then(async (granted) => {
+      if (!granted) throw new Error('Provider permission denied');
+      await run('translate');
+    })
+    .catch((error) => {
+      statusNode.textContent = error.message;
+    });
+});
+stopButton.addEventListener('click', () => void run('stop'));
+restoreButton.addEventListener('click', () => void run('restore'));
+modeSelect.addEventListener('change', () => {
+  void chrome.runtime
+    .sendMessage({ kind: 'control', action: 'mode', mode: modeSelect.value })
+    .then((reply) => {
+      if (!reply.ok) throw new Error(reply.error);
+      updateStatus(reply.result);
+    })
+    .catch((error) => {
+      statusNode.textContent = error.message;
+    });
+});
 void chrome.runtime
   .sendMessage({ kind: 'config.get' })
   .then((reply) => {
-    if (!reply.ok) return;
+    if (!reply.ok) throw new Error(reply.error);
+    config = reply.result as KernelConfig;
+    translationMode.textContent =
+      config.translation.mode === 'built-in'
+        ? 'Built-in'
+        : config.translation.mode === 'external'
+          ? 'External'
+          : 'Off';
+    const enabled = config.translation.mode === 'built-in';
+    translateButton.disabled = !enabled;
+    stopButton.disabled = !enabled;
+    restoreButton.disabled = !enabled;
     providerOrigins = [
-      ...new Set<string>(
-        reply.result.providers.map(
-          (p: { baseUrl: string }) => `${new URL(p.baseUrl).origin}/*`,
+      ...new Set(
+        config.providers.map(
+          (provider) => `${new URL(provider.baseUrl).origin}/*`,
         ),
       ),
     ];
-    translateButton.disabled = false;
-    for (const action of reply.result.actions) {
-      const button = document.createElement('button');
-      button.textContent = action.name;
-      button.addEventListener('click', () => {
+    for (const action of config.actions) {
+      const actionButton = document.createElement('button');
+      actionButton.textContent = action.name;
+      actionButton.addEventListener('click', () => {
         void chrome.runtime
           .sendMessage({ kind: 'action.run', id: action.id })
-          .then((r) => {
-            status.textContent = r.ok ? 'Opened' : r.error;
+          .then((response) => {
+            statusNode.textContent = response.ok ? 'Opened' : response.error;
           });
       });
-      document.getElementById('actions')!.append(button);
+      document.getElementById('actions')!.append(actionButton);
     }
+    return control('activate');
   })
+  .then(updateStatus)
   .catch((error) => {
-    status.textContent = error.message;
+    statusNode.textContent = error.message;
   });
-void command('status');
-const interval = setInterval(() => void command('status'), 1000);
-window.addEventListener('pagehide', () => clearInterval(interval));

@@ -29,7 +29,7 @@ for (const name of ['background', 'content'])
         entry: resolve(root, `src/${name}.ts`),
         formats: [name === 'content' ? 'iife' : 'es'],
         fileName: () => `${name}.js`,
-        name: 'TranslationKernel',
+        name: 'Ogleans',
       },
       rollupOptions: { output: { codeSplitting: false } },
     },
@@ -78,8 +78,8 @@ await writeFile(
   'dist/sdk/package.json',
   JSON.stringify(
     {
-      name: '@translation-kernel/sdk',
-      version: '0.1.0',
+      name: '@ogleans/sdk',
+      version: '0.2.0-alpha.1',
       type: 'module',
       exports: {
         '.': { types: './types/sdk/src/index.d.ts', import: './index.js' },
