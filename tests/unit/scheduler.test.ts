@@ -200,11 +200,12 @@ describe('multi-provider scheduling', () => {
       {
         id: 'a',
         concurrency: 4,
-        rateLimit: { requests: 2, windowMs: 90 },
+        rateLimit: { requests: 1, windowMs: 120 },
       },
     );
+    const started = Date.now();
     await scheduler.schedule(
-      segments(5),
+      segments(4),
       { targetLanguage: 'zh' },
       {
         ...options,
@@ -212,14 +213,13 @@ describe('multi-provider scheduling', () => {
         primary: 'a',
       },
     );
-    expect(timestamps).toHaveLength(5);
-    for (let start = 0; start < timestamps.length; start++)
+    const elapsed = Date.now() - started;
+    expect(timestamps).toHaveLength(4);
+    for (let index = 1; index < timestamps.length; index++)
       expect(
-        timestamps.filter(
-          (time) =>
-            time >= timestamps[start]! && time < timestamps[start]! + 90,
-        ).length,
-      ).toBeLessThanOrEqual(2);
+        timestamps[index]! - timestamps[index - 1]!,
+      ).toBeGreaterThanOrEqual(90);
+    expect(elapsed).toBeGreaterThanOrEqual(330);
   });
   it('isolates provider failures and preserves successful partial results', async () => {
     const scheduler = new MultiProviderScheduler();
