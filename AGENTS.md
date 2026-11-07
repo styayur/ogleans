@@ -34,6 +34,7 @@ pnpm run build
 ```
 
 Authoritative CI entrypoints:
+
 - `.github/workflows/architecture.yml` — Architecture documentation
 - `.github/workflows/ci.yml` — CI
 - `.github/workflows/release.yml` — Release
