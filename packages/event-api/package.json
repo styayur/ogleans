@@ -1,8 +1,8 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.1",
   "exports": "./src/index.ts",
   "type": "module",
   "private": true,
-  "name": "@translation-kernel/event-api",
+  "name": "@ogleans/event-api",
   "license": "MPL-2.0"
 }

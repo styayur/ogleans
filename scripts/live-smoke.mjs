@@ -82,7 +82,7 @@ for (const url of [
         a.render(results, 'bilingual');
         const renderMs = performance.now() - start;
         const rendered = document.querySelectorAll(
-          '[data-tk-translation]',
+          '[data-ogleans-translation]',
         ).length;
         start = performance.now();
         a.restore();

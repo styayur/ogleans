@@ -15,7 +15,7 @@ import type {
 const BLOCK =
   'p,h1,h2,h3,h4,h5,h6,li,blockquote,td,th,dd,dt,figcaption,div,section,article,main,body';
 const HARD_SKIP =
-  'script,style,code,pre,textarea,input,select,svg,math,[contenteditable]:not([contenteditable="false"]),[hidden],[aria-hidden="true"],[data-tk-translation]';
+  'script,style,code,pre,textarea,input,select,svg,math,[contenteditable]:not([contenteditable="false"]),[hidden],[aria-hidden="true"],[data-ogleans-ui],[data-ogleans-translation],[data-tk-translation]';
 export class HtmlAdapter implements DocumentAdapter {
   readonly id = 'html';
   readonly anchors = new Map<string, DomAnchor>();
@@ -35,17 +35,21 @@ export class HtmlAdapter implements DocumentAdapter {
     this.rule = resolveRules(document.location?.href ?? '', userRules);
     validateSelectors(this.rule, document);
   }
+  sourceForAnchor(id: string): string | undefined {
+    return this.anchors.get(id)?.source;
+  }
   private excluded(element: Element): boolean {
     if (
       this.rule.root.length &&
-      !this.rule.root.some((s) => element.closest(s))
+      !this.rule.root.some((selector) => element.closest(selector))
     )
       return true;
     if (element.closest(HARD_SKIP)) return true;
-    if (this.rule.exclude.some((s) => element.closest(s))) return true;
+    if (this.rule.exclude.some((selector) => element.closest(selector)))
+      return true;
     if (
       this.rule.include.length &&
-      !this.rule.include.some((s) => element.closest(s))
+      !this.rule.include.some((selector) => element.closest(selector))
     )
       return true;
     for (
@@ -80,13 +84,15 @@ export class HtmlAdapter implements DocumentAdapter {
       groups.set(block, nodes);
     }
     for (const [block, nodes] of groups) {
-      const source = nodes.map((n) => this.renderer.originalText(n)).join('');
+      const source = nodes
+        .map((node) => this.renderer.originalText(node))
+        .join('');
       const pieces = segmentText(source);
       const previous = this.byBlock.get(block);
       if (
         previous &&
         previous.nodes.length === nodes.length &&
-        previous.nodes.every((n, i) => n === nodes[i]) &&
+        previous.nodes.every((node, index) => node === nodes[index]) &&
         previous.source === source &&
         !this.renderer.missingTranslation(previous)
       )
@@ -104,7 +110,7 @@ export class HtmlAdapter implements DocumentAdapter {
         id,
         block,
         nodes,
-        segmentIds: pieces.map((_, i) => `${id}-${i}`),
+        segmentIds: pieces.map((_, index) => `${id}-${index}`),
         source,
         pieces,
       };
@@ -131,19 +137,16 @@ export class HtmlAdapter implements DocumentAdapter {
         url: this.document.location?.href,
         title: this.document.title,
       },
-      children: [...this.anchors.values()].map((anchor) => {
-        const pieces = anchor.pieces;
-        return {
-          id: anchor.id,
-          type: 'block' as const,
-          children: pieces.map((text, i) => ({
-            id: anchor.segmentIds[i],
-            type: 'segment' as const,
-            text,
-            metadata: { language: detectLanguage(text) },
-          })),
-        };
-      }),
+      children: [...this.anchors.values()].map((anchor) => ({
+        id: anchor.id,
+        type: 'block' as const,
+        children: anchor.pieces.map((text, index) => ({
+          id: anchor.segmentIds[index],
+          type: 'segment' as const,
+          text,
+          metadata: { language: detectLanguage(text) },
+        })),
+      })),
     };
   }
   read(): DocumentNode {
@@ -154,7 +157,9 @@ export class HtmlAdapter implements DocumentAdapter {
       this.anchors.clear();
       this.byBlock = new WeakMap();
       const roots = this.rule.root.length
-        ? this.rule.root.flatMap((s) => [...this.document.querySelectorAll(s)])
+        ? this.rule.root.flatMap((selector) => [
+            ...this.document.querySelectorAll(selector),
+          ])
         : [this.document.body];
       for (const root of roots) if (root) this.scan(root);
     });
@@ -184,7 +189,8 @@ export class HtmlAdapter implements DocumentAdapter {
     }
   }
   private connect(): void {
-    this.observer?.observe(this.document.body, {
+    if (!this.observer) return;
+    this.observer.observe(this.document.body, {
       childList: true,
       subtree: true,
       characterData: true,
@@ -205,7 +211,11 @@ export class HtmlAdapter implements DocumentAdapter {
       record.target.nodeType === Node.ELEMENT_NODE
         ? (record.target as Element)
         : record.target.parentElement;
-    if (!element || element.closest('[data-tk-translation]')) return;
+    if (
+      !element ||
+      element.closest('[data-ogleans-translation],[data-tk-translation]')
+    )
+      return;
     this.changed = true;
     const block = element.closest(BLOCK) ?? element;
     if (record.type !== 'childList' || this.byBlock.has(block)) {
@@ -215,7 +225,9 @@ export class HtmlAdapter implements DocumentAdapter {
     for (const node of record.addedNodes) {
       if (
         node.nodeType === Node.ELEMENT_NODE &&
-        !(node as Element).matches('[data-tk-translation]')
+        !(node as Element).matches(
+          '[data-ogleans-translation],[data-tk-translation],[data-ogleans-ui]',
+        )
       )
         this.pending.add(node as Element);
       else if (node.nodeType === Node.TEXT_NODE) this.pending.add(block);

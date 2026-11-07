@@ -55,10 +55,7 @@ async function zip(root, output) {
 }
 await mkdir('release', { recursive: true });
 for (const target of ['chromium', 'sdk'])
-  await zip(
-    `dist/${target}`,
-    `release/translation-kernel-${target}-v0.1.0.zip`,
-  );
+  await zip(`dist/${target}`, `release/ogleans-${target}-v0.2.0-alpha.1.zip`);
 const checksums = [];
 for (const file of await readdir('release'))
   if (file.endsWith('.zip'))

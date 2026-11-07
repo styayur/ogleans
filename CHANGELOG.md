@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0-alpha.1 — 2026-11-07
+
+- Renamed the project and extension identity to Ogleans while retaining the reusable Translation Kernel v1 APIs.
+- Added independent gesture, collection and multi-provider scheduler packages.
+- Added explicit built-in, external and disabled translation modes.
+- Added configurable mouse gestures, keyboard alternatives, conflict detection, floating selection controls and a borderless collection surface.
+- Added concurrent paragraph scheduling with global/provider concurrency, rate windows, retry, fallback, cancellation and ordered partial rendering.
+- Added independent W3C-compatible collections with text anchors, Text Fragments, search, tags, notes, editing, deletion, JSON/Markdown import/export and backup.
+- Added optional native browser bookmark export and permission-free HTML bookmark fallback.
+- Added v1 configuration migration and legacy collection-key migration.
+- Added English/Chinese documentation, API/schema specifications, browser E2E coverage, performance data and a release workflow.
+
 ## 0.1.0 — 2026-10-08
 
 - Introduced the TypeScript translation microkernel and version 1 public contracts.

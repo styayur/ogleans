@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright, expect
 
 root = Path(__file__).resolve().parents[1]
 extension = root / 'dist/chromium'
-output = root / 'docs/assets/extension-settings-v0.1.0.png'
+output = root / 'docs/assets/extension-settings-v0.2.0-alpha.1.png'
 output.parent.mkdir(parents=True, exist_ok=True)
 with sync_playwright() as p:
     context = p.chromium.launch_persistent_context(
@@ -21,7 +21,7 @@ with sync_playwright() as p:
         page = context.new_page()
         page.goto(f'chrome-extension://{extension_id}/options.html')
         page.wait_for_load_state('networkidle')
-        expect(page.get_by_role('heading', name='Translation Kernel', exact=True)).to_be_visible()
+        expect(page.get_by_role('heading', name='Ogleans', exact=True)).to_be_visible()
         page.screenshot(path=str(output))
         print(f'Saved real extension settings: {output.name}')
     finally:

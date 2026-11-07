@@ -58,8 +58,50 @@ describe('rules and configuration', () => {
     ).toBeUndefined();
     expect(exportConfig(value)).not.toContain('secret');
   });
+  it('migrates version 1 configuration and supports translation-free modes', () => {
+    const legacy = {
+      schemaVersion: 1,
+      sourceLanguage: 'en',
+      targetLanguage: 'zh-CN',
+      mode: 'bilingual',
+      placement: 'below',
+      primary: 'google',
+      providers: [
+        {
+          id: 'google',
+          kind: 'google',
+          baseUrl: 'https://translate.googleapis.com',
+          timeoutMs: 20000,
+        },
+      ],
+      rules: [],
+      actions: [],
+    };
+    const migrated = parseConfig(legacy);
+    expect(migrated.schemaVersion).toBe(2);
+    expect(migrated.translation.mode).toBe('built-in');
+    expect(migrated.gestures.mappings.length).toBeGreaterThan(0);
+    expect(migrated.collection.dictionaryUrlTemplate).toContain('{text}');
+    const external = parseConfig({
+      ...defaultConfig,
+      primary: '',
+      providers: [],
+      translation: { ...defaultConfig.translation, mode: 'external' },
+    });
+    expect(external.translation.mode).toBe('external');
+    expect(external.providers).toEqual([]);
+  });
+  it('detects exact gesture conflicts during validation', () => {
+    const conflicted = structuredClone(defaultConfig);
+    conflicted.gestures.mappings.push({
+      id: 'duplicate',
+      action: 'panel.hide',
+      sequence: ['up'],
+    });
+    expect(() => parseConfig(conflicted)).toThrow(/assigned to both/i);
+  });
   it('rejects unsafe input', () => {
-    expect(() => parseConfig({ ...defaultConfig, schemaVersion: 2 })).toThrow();
+    expect(() => parseConfig({ ...defaultConfig, schemaVersion: 3 })).toThrow();
     expect(() =>
       parseConfig({ ...defaultConfig, primary: 'missing' }),
     ).toThrow();

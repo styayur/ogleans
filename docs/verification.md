@@ -1,49 +1,68 @@
-# v0.1.0 verification
+# Ogleans verification
 
-Release date: 2026-10-08 (Asia/Singapore). Local validation uses Windows, Node 26.7.0 and Chromium 153.0.8010.12. These are measured results, not cross-platform guarantees.
+## Release identity
 
-## Automated checks
+- Version: `v0.2.0-alpha.1`
+- MV3 manifest version: `0.2.0`
+- Manifest `version_name`: `0.2.0-alpha.1`
+- Package versions: `0.2.0-alpha.1`
+- Target browser: Chromium 120+
+- Firefox: not validated, not claimed
 
-- ESLint, strict TypeScript and production builds passed.
-- 21 unit/DOM/lifecycle tests passed across four files.
-- 11 actual Chromium extension E2E tests passed: static article, Wikipedia-like, GitHub-like, SPA, dynamic insertion, 1,000-paragraph large document, failure/fallback, reverse target, stop, restore/retranslate, import/export, secret access boundaries, and real React/Vue component updates.
-- Built provider/action/event/adapter/bridge examples executed successfully.
-- Full dependency audit reported no known vulnerabilities; production has no installed runtime dependencies.
-- Settings screenshot was visually reviewed for layout, keyboard controls and readable validation status.
+## Local verification
 
-E2E runs the built extension in a persistent Chromium context. A separate, ignored test copy of the manifest grants only the deterministic localhost provider origin, avoiding headless browser permission dialogs. The released manifest has **no required host permissions**; provider access is optional and requested by a user gesture. Tests cover permission request calls when permission is already granted; first-time browser consent UI still needs human interaction.
+Run:
 
-## Live website verification
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm examples
+pnpm e2e
+pnpm format:check
+pnpm audit --prod --audit-level high
+pnpm package
+```
 
-[Raw live results](live-verification.json) record isolated Chromium visits to Wikipedia Translation, the Microsoft TypeScript GitHub README, MDN MutationObserver and React's learning site. The built HTML adapter discovered 633, 21, 34 and 79 segments respectively in that run. Three segments per site were translated using the real keyless Google endpoint; a translated sample was then translated Chinese → English. All four samples rendered and restored successfully, with no observed page JavaScript errors.
+At the time of this report:
 
-The live harness uses CSP bypass solely to import the test SDK; the production extension does not alter page CSP. These are online integration samples, not exhaustive full-site manual certification or evidence of semantic translation accuracy. Deterministic local long-article/large-DOM and actual React/Vue E2E cover the full extension lifecycle separately. No real OpenAI-compatible account or Ollama model was supplied; their protocol behavior is verified with mocks/local HTTP endpoints.
+- Unit/DOM/lifecycle tests: **45 passed** across 8 files.
+- Chromium extension E2E tests: **19 passed** across 2 spec files.
+- Real extension fixture scale: 250 paragraphs with dynamic insert/edit.
+- Static scanner benchmark: 1,000 / 10,000 / 50,000 DOM nodes.
+- Multi-provider deterministic scheduler benchmark: 12 segments, 2 providers, 2.75× speedup over the sequential baseline.
+- Production Chromium build and SDK build complete.
 
-## Performance and size
+The exact final CI run and release checksums are reported in the pull request and release notes.
 
-Single local run; see [raw benchmark](benchmark.json). Nodes count text and elements. API/network latency is excluded from deterministic kernel measurements.
+## Acceptance evidence
 
-| DOM nodes | Segments | Scan ms | Render ms | Restore ms | Scheduling overhead ms | Dynamic model callback ms |
-| --------- | -------- | ------- | --------- | ---------- | ---------------------- | ------------------------- |
-| 1,001     | 200      | 20.7    | 3.0       | 0.4        | 2.6                    | 81.5                      |
-| 10,001    | 2,000    | 75.9    | 11.3      | 2.0        | 6.7                    | 94.5                      |
-| 50,001    | 10,000   | 462.5   | 82.6      | 3.5        | 52.9                   | 284.7                     |
+- `external` and `disabled` modes do not create Ogleans translation spans.
+- Gestures and selection capture work in both modes.
+- Collections can be created, searched, tagged, annotated and exported in both modes.
+- Two providers receive paragraphs concurrently and paragraph order is preserved.
+- Context-menu and ordinary-click behavior are tested in a real browser.
+- Native bookmarks are preserved and duplicate exports are avoided.
+- HTML bookmark fallback downloads an escaped Netscape Bookmark File.
+- Release manifest keeps `bookmarks` optional.
+- Configuration schema v1 migrates to v2.
+- SDK examples continue to run.
 
-Dynamic callback includes 80 ms debounce plus dirty-subtree processing, pruning and construction of the full document snapshot. It does not mean the whole DOM was rescanned. Scheduling overhead subtracts measured scanning, rendering and deterministic provider execution from total kernel duration. Estimated UTF-16 source-text storage is 14,980 / 153,780 / 777,780 bytes; this excludes engine, objects and DOM memory and is not a heap measurement. Tests confirm cleanup and bounded cache behavior; a long-running heap/leak soak has not been conducted.
+See [E2E report](e2e-report.md), [performance data](performance.md) and [benchmark JSON](benchmark.json).
 
-Extension JavaScript + CSS: **42,532 bytes (41.5 KiB)**. All installable files including complete licenses/notices: **209,454 bytes (204.5 KiB)**. SDK ESM: about **30.2 kB** before compression, plus declarations and MPL license. React/Vue test fixtures are not included in either release artifact. ZIP files use DEFLATE and include SHA-256 checksums.
+## Security checks
 
-## CI and release gate
+- Content scripts cannot read provider secrets or full configuration.
+- Content-to-worker messages require the extension ID, HTTP(S) top frame and bounded payloads.
+- Provider requests use controlled origins, reject redirects and omit browser credentials.
+- Translation output is rendered as text.
+- Collection exports contain no provider credentials or custom headers.
+- Native bookmark export never deletes or overwrites existing bookmarks.
 
-[GitHub Actions](https://github.com/styayur/translation-kernel/actions) runs formatting, lint, typecheck, unit/DOM, E2E, examples, build, dependency audit and packaging. Publication is gated on a successful CI run for the release commit. The Release page links the tagged source and supplies the installable Chromium ZIP, SDK ZIP and checksums. CI status and exact release commit are reported in the delivery message.
+## Reproducibility
 
-## Known limitations
-
-- Chromium MV3 is validated; Firefox is a reserved architecture target and has no tested release package.
-- No shadow DOM, cross-origin iframe, PDF/EPUB/media/OCR reader or cloud synchronization.
-- Language detection is conservative script recognition, not probabilistic multilingual classification; Latin-script text returns `und` and the provider can auto-detect.
-- Anchor IDs are stable within a session, not across reloads. Original DOM nodes/listeners are preserved, but arbitrary hostile/custom rendering frameworks and continuously rewriting pages need site-specific verification.
-- Translation-only mode blanks original mapped Text nodes. Links retain their identity/handlers but their original text is hidden until restore; generated translation is grouped at the block level rather than rebuilding link semantics in translated prose.
-- Google uses an unofficial convenience endpoint and sequential requests; availability/rate limits are not guaranteed. OpenAI/Ollama examples use complete non-streaming batches.
-- Existing optional permissions are not revoked by reset; revoke them in browser extension settings. Keys are local and unencrypted.
-- No Chrome Web Store submission, account-backed provider credentials, manual first-time consent certification, or long-running memory-soak certification is claimed.
+- `docs/benchmark.json` is generated by `pnpm benchmark`.
+- `docs/live-verification.json` is generated by `pnpm exec node scripts/live-smoke.mjs` when live provider credentials/network access are available.
+- Architecture evidence anchors are checked by `python docs/architecture/verify.py` and optionally rendered by Mermaid CLI.
+- Package artifacts and SHA-256 checksums are generated by `pnpm package`.

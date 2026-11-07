@@ -33,7 +33,7 @@ def main():
         text = path.read_text(encoding='utf-8')
         for anchor in source['anchors']:
             require(anchor in text, f'Missing source anchor: {source["path"]}: {anchor}')
-    markdowns = [root / 'README.md', root / 'docs/architecture/README.md']
+    markdowns = [root / 'README.md', root / 'README.zh-CN.md', root / 'docs/architecture/README.md']
     if (root / 'docs/README.zh-CN.md').exists():
         markdowns.append(root / 'docs/README.zh-CN.md')
     count = 0

@@ -1,31 +1,55 @@
-# Provider API v1
+# Provider API v1 and scheduling composition
 
-`TranslationProvider` has `id`, `name`, and `translate(segments, context, options?)`. A segment is `{id,text,sourceLanguage?}`; a result is `{id,text,provider?}`. Return exactly one nonempty result for every input ID. Never mutate inputs. Honor `options.signal` and never execute source text as instructions. Router validates outputs, limits context, chunks batches and manages retry/fallback.
+`TranslationProvider` receives ID-bearing segments, a bounded `TranslationContext` and an AbortSignal. It returns exactly one non-empty result per segment with the same IDs. Provider output is validated before rendering.
 
-After `pnpm build`, run this with `node --input-type=module` from the repository root:
-
-```js
-import { ProviderRouter } from './dist/sdk/index.js';
-const router = new ProviderRouter({ primary: 'demo', retries: 0 });
-router.register({
-  id: 'demo',
-  name: 'Deterministic example',
-  async translate(segments, context, options) {
-    options?.signal?.throwIfAborted();
-    return segments.map((s) => ({
-      id: s.id,
-      text: `${context.targetLanguage}: ${s.text}`,
-    }));
-  },
-});
-console.log(
-  await router.translate(
-    { id: 'one', text: 'Hello' },
-    { targetLanguage: 'zh' },
-  ),
-);
+```ts
+interface TranslationProvider {
+  readonly id: string;
+  readonly name: string;
+  translate(
+    segments: TranslationSegment[],
+    context: TranslationContext,
+    options?: TranslationOptions,
+  ): Promise<TranslationResult[]>;
+}
 ```
 
-For real services, `createProvider` is exported from `dist/examples/index.js`. OpenAI-compatible configuration uses `{id,kind:'openai',baseUrl:'https://your-endpoint/v1',apiKey,model,headers,timeoutMs}`. Ollama uses `kind:'ollama'`, a root base URL and `/api/chat`. Google is fixed to its convenience endpoint. All examples omit credentials, reject redirects and implement timeouts. Streaming is not enabled in 0.1; results remain full validated batches. Do not place service secrets in webpage code; the browser application runs networking in its service worker.
+The v1 `ProviderRouter` remains available for compatibility and primary/fallback batch routing. New Ogleans browser translation uses `MultiProviderScheduler` with:
 
-Context supports target/source language, page title/URL, previous/next segments and document language. Title is capped at 256 characters, URL at 2,048, adjacent segments at 512 each. HTML currently provides title/URL and configured languages; adjacency is available to external adapters/callers.
+- round-robin, weighted, language-aware, manual and primary/fallback assignment;
+- global and provider concurrency;
+- provider request windows;
+- retry only for retryable failures;
+- sequential fallback after terminal failure;
+- cancellation and partial success;
+- ordered summary results.
+
+See [Provider scheduling](provider-scheduling.md) for the full contract.
+
+## Provider configuration
+
+Built-in provider types:
+
+- `google`: fixed `https://translate.googleapis.com` convenience endpoint;
+- `openai`: OpenAI-compatible `/chat/completions`;
+- `ollama`: local or compatible `/api/chat`.
+
+Endpoints must use HTTPS except loopback HTTP. Credentials, queries and fragments are rejected in base URLs. Custom headers reject `Host`, `Cookie`, `Origin`, `Referer`, `Content-Length` and newline injection.
+
+Provider policies include `enabled`, `concurrency`, `weight`, language declarations and `{requests, windowMs}` rate limits. Config validation bounds all values.
+
+## Context and terminology
+
+`TranslationContext` carries bounded title, URL, source/target language, document language, previous/next segment context and an optional bounded `terminology` string. OpenAI-compatible and Ollama-compatible prompt examples include terminology as data. It is sent only when built-in translation is explicitly invoked.
+
+## Security
+
+- Provider keys and custom headers live only in the trusted extension worker.
+- Content scripts receive public settings without provider secrets.
+- Fetch uses `credentials: 'omit'` and `redirect: 'error'`.
+- Provider response size is bounded.
+- Model output is parsed as data and rendered as text.
+
+## Example
+
+See [adapter example](adapter-api.md) and [Ollama provider example](../examples/providers/src/index.ts). External adapters can implement the same provider contract without using the extension application.

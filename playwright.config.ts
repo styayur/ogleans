@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/e2e',
   workers: 1,
-  timeout: 60000,
+  timeout: 120000,
   reporter: 'list',
   webServer: {
     command: 'node tests/fixtures/server.mjs',

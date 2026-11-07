@@ -1,28 +1,28 @@
-# Translation Kernel v0.1.0
+# Ogleans v0.2.0-alpha.1
 
-A small, composable TypeScript translation kernel and on-demand Chromium MV3 extension.
+A Chromium MV3 reading layer with replaceable translation and independent local collections.
 
-- Semantic HTML discovery with preserved inline nodes, links and listeners.
-- Original / translation / bilingual rendering, below / inline placement, restore and SPA updates.
-- Provider API with batches, bounded context, timeout, retry, fallback, cancellation and bounded cache.
-- Google convenience, OpenAI-compatible and Ollama-compatible integrations.
-- Typed events, safe custom URL actions, universal document adapters and example bridge projections.
-- Portable versioned config/providers/rules/actions import/export; secrets omitted from exports.
-- 21 unit/DOM/lifecycle tests and 11 Chromium extension E2E tests passed locally; deterministic examples and dependency audit passed.
-- Actual English → Chinese → English samples on Wikipedia, GitHub README, MDN and React documentation passed.
+- Three independent layers: gestures, translation scheduling and collections.
+- Explicit translation modes: `built-in`, `external` and `disabled`.
+- Configurable mouse gestures, keyboard alternatives, conflict detection and floating controls.
+- Concurrent multi-provider paragraph scheduling with bounded concurrency and rate windows.
+- Round-robin, weighted, language-aware, manual and primary/fallback distribution.
+- Streaming partial completion with stable source order.
+- Independent W3C-compatible collection records, robust anchors, tags, notes, search, JSON/Markdown import/export.
+- Optional native browser bookmark export that preserves existing bookmarks, plus permission-free HTML fallback.
+- v1 configuration migration and legacy collection-key support.
+- English and Chinese README, migration guide, API/schema documentation, performance data and real Chromium E2E evidence.
 
 ## Downloads
 
-`translation-kernel-chromium-v0.1.0.zip`: extract, open `chrome://extensions`, enable Developer mode and Load unpacked. Configure/save providers to grant their origins, then Translate. This is not a Chrome Web Store submission.
+`ogleans-chromium-v0.2.0-alpha.1.zip`: extract, open `chrome://extensions`, enable Developer mode and load unpacked.
 
-`translation-kernel-sdk-v0.1.0.zip`: reusable ESM library and TypeScript declarations. Public contracts are documented in the repository.
+`ogleans-sdk-v0.2.0-alpha.1.zip`: reusable ESM library and TypeScript declarations.
 
-`SHA256SUMS.txt`: verify both downloaded ZIPs.
+`SHA256SUMS.txt`: verify both ZIPs.
 
-## Licensing and limits
+## Known limitations
 
-Library/SDK: MPL-2.0. Full browser application: GPL-3.0-or-later. Complete license texts and notices are included; third-party materials retain their original terms. See README and docs/licensing.md for boundaries under the studio's license policy.
+Chromium is validated. Firefox packaging is not validated and is not claimed as supported. Other translation extensions cannot be universally controlled; Ogleans offers passive external mode and user-mediated display capture. Cross-origin iframes, shadow roots, provider service quality and arbitrary page-change anchor restoration remain external or explicitly limited. No cloud sync, accounts, telemetry, AI chat, TTS/STT, OCR, vocabulary training or full knowledge management are included.
 
-Chromium is validated. Firefox packaging, shadow DOM/iframes, first-time permission-dialog manual certification, real paid/local-model credentials and long-running memory-soak testing remain outside this validation. Google uses an unofficial convenience endpoint and may fail or throttle; real OpenAI-compatible/Ollama service availability depends on your endpoint/model. No chat, learning, media, sync, accounts or backend are included.
-
-Full measurements, architecture, public APIs and limitations: [verification](https://github.com/styayur/translation-kernel/blob/v0.1.0/docs/verification.md) and [Chinese delivery report](https://github.com/styayur/translation-kernel/blob/v0.1.0/docs/DELIVERY_REPORT.zh-CN.md).
+Full architecture, API, collection schema, tests and compatibility: [README](https://github.com/styayur/ogleans/blob/v0.2.0-alpha.1/README.md), [E2E report](https://github.com/styayur/ogleans/blob/v0.2.0-alpha.1/docs/e2e-report.md), [performance](https://github.com/styayur/ogleans/blob/v0.2.0-alpha.1/docs/performance.md) and [migration](https://github.com/styayur/ogleans/blob/v0.2.0-alpha.1/docs/migration-v0.2.md).

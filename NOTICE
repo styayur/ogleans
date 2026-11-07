@@ -1,11 +1,11 @@
-Translation Kernel
+Ogleans
 Copyright 2026 Stya Yur Open Source Studio and contributors.
 
 Reusable source: MPL-2.0 (LICENSE).
 Browser application: GPL-3.0-or-later (apps/browser-extension/LICENSE).
 See docs/licensing.md for distribution boundaries.
-Corresponding source: https://github.com/styayur/translation-kernel
-Release source tag: v0.1.0
+Corresponding source: https://github.com/styayur/ogleans
+Release source tag: v0.2.0-alpha.1
 
 Vite-generated browser module loading helper: Vite contributors, MIT license.
 Third-party dependencies retain their original licenses. See THIRD_PARTY.md.

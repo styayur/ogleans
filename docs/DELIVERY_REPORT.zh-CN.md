@@ -1,4 +1,4 @@
-# Translation Kernel v0.1.0 交付报告
+# Translation Kernel v0.1.0 交付报告（历史）
 
 交付日期：2026-10-08（Asia/Singapore）。完整验证证据见 [verification.md](verification.md)、[性能原始数据](benchmark.json) 和 [公开网站在线抽样](live-verification.json)。
 

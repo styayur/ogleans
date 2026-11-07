@@ -1,0 +1,43 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install -g pnpm@12.4.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm format:check
+      - run: pnpm check
+      - run: pnpm audit --prod --audit-level high
+      - run: pnpm package
+      - name: Verify checksums
+        run: cd release && sha256sum -c SHA256SUMS.txt
+      - name: Require alpha gate for prerelease tag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" != *-* ]]; then
+            echo "Stable release blocked: alpha release gates have not been promoted." >&2
+            exit 1
+          fi
+      - name: Create prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release/ogleans-chromium-v0.2.0-alpha.1.zip \
+            release/ogleans-sdk-v0.2.0-alpha.1.zip \
+            release/SHA256SUMS.txt \
+            --title "Ogleans ${GITHUB_REF_NAME}" \
+            --notes-file docs/release-notes.md \
+            --verify-tag \
+            --prerelease

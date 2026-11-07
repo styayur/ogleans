@@ -133,6 +133,52 @@ for (const count of [1000, 10000, 50000]) {
   metrics.push(metric);
 }
 await browser.close();
+const { MultiProviderScheduler } = await import('../dist/sdk/index.js');
+const schedulerSegments = Array.from({ length: 12 }, (_, index) => ({
+  id: `bench-${index}`,
+  text: `Benchmark paragraph ${index}`,
+}));
+const schedulerStart = performance.now();
+const scheduler = new MultiProviderScheduler();
+for (const id of ['a', 'b'])
+  scheduler.register(
+    {
+      id,
+      name: id,
+      async translate(items) {
+        await new Promise((resolve) => setTimeout(resolve, 30));
+        return items.map((item) => ({
+          id: item.id,
+          text: `${id}:${item.text}`,
+        }));
+      },
+    },
+    { id, concurrency: 2, weight: 1 },
+  );
+const scheduled = await scheduler.schedule(
+  schedulerSegments,
+  { targetLanguage: 'zh' },
+  {
+    strategy: 'round-robin',
+    globalConcurrency: 4,
+    retries: 0,
+    timeoutMs: 500,
+  },
+);
+const concurrentSchedulerMs = performance.now() - schedulerStart;
+const sequentialBaselineMs = schedulerSegments.length * 30;
+const schedulerBenchmark = {
+  segments: schedulerSegments.length,
+  providers: 2,
+  globalConcurrency: 4,
+  providerConcurrency: 2,
+  concurrentMs: Math.round(concurrentSchedulerMs * 100) / 100,
+  sequentialBaselineMs,
+  speedup:
+    Math.round((sequentialBaselineMs / concurrentSchedulerMs) * 100) / 100,
+  completed: scheduled.results.length,
+  failures: scheduled.failures.length,
+};
 const sizes = {};
 for (const file of await readdir('dist/chromium', { recursive: true })) {
   const s = await stat(`dist/chromium/${file}`);
@@ -151,8 +197,10 @@ const report = {
     'Text bytes estimate excludes DOM, JS objects, engine and provider memory.',
     'Dynamic elapsed measures insertion to model callback, including the 80 ms debounce.',
     'Translation overhead subtracts measured scan/render and deterministic provider time from the whole kernel run; no network API is used.',
+    'The scheduler throughput measurement uses deterministic in-process providers with 30 ms work per segment; it is not a provider service benchmark.',
   ],
   metrics,
+  schedulerBenchmark,
   bundleBytes: sizes,
   totalBundleBytes: Object.values(sizes).reduce((a, b) => a + b, 0),
 };
