@@ -6,3 +6,6 @@ playwright-report
 LICENSE
 licenses
 .local
+
+# gh-aw compiler-owned output; format sources, then regenerate locks.
+.github/workflows/*.lock.yml
