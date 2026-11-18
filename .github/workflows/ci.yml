@@ -12,6 +12,7 @@ jobs:
           node-version: 24
       - run: npm install -g pnpm@12.4.2
       - run: pnpm install --frozen-lockfile
+      - run: pnpm check:minimatch
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm format:check
       - run: pnpm check

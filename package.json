@@ -18,7 +18,8 @@
     "benchmark": "node scripts/benchmark.mjs",
     "package": "node scripts/package.mjs",
     "examples": "node scripts/verify-examples.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm examples && pnpm e2e"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm examples && pnpm e2e",
+    "check:minimatch": "node security/verify-minimatch.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
