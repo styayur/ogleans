@@ -5,13 +5,26 @@ const project = createRequire(resolve(process.cwd(), 'package.json'));
 const routes = {
   eslint: ['eslint'],
   '@eslint/config-array': ['eslint', '@eslint/config-array'],
-  '@typescript-eslint/typescript-estree': ['typescript-eslint', '@typescript-eslint/parser', '@typescript-eslint/typescript-estree'],
+  '@typescript-eslint/typescript-estree': [
+    'typescript-eslint',
+    '@typescript-eslint/parser',
+    '@typescript-eslint/typescript-estree',
+  ],
 };
-for (const name of ["eslint", "@eslint/config-array", "@typescript-eslint/typescript-estree"]) {
+for (const name of [
+  'eslint',
+  '@eslint/config-array',
+  '@typescript-eslint/typescript-estree',
+]) {
   let consumer = project;
-  for (const step of routes[name]) consumer = createRequire(consumer.resolve(step));
+  for (const step of routes[name])
+    consumer = createRequire(consumer.resolve(step));
   const target = consumer.resolve('minimatch');
-  execFileSync(process.execPath, ['-e', `
+  execFileSync(
+    process.execPath,
+    [
+      '-e',
+      `
     const assert = require('node:assert/strict');
     const { minimatch, Minimatch } = require(process.argv[1]);
     assert.equal(typeof minimatch, 'function');
@@ -25,6 +38,10 @@ for (const name of ["eslint", "@eslint/config-array", "@typescript-eslint/typesc
     ]) assert.equal(minimatch(path, glob), expected);
     const matcher = new Minimatch('src/**/../**/../*.{ts,tsx}', {optimizationLevel: 2});
     assert.equal(typeof matcher.match('view.ts'), 'boolean');
-  `, target], { timeout: 3000, stdio: 'inherit' });
+  `,
+      target,
+    ],
+    { timeout: 3000, stdio: 'inherit' },
+  );
   console.log('Verified minimatch compatibility for', name, target);
 }
