@@ -2,3 +2,8 @@ packages:
   - apps/*
   - packages/*
   - examples/*
+
+overrides:
+  'eslint>minimatch': 11.0.4
+  '@eslint/config-array>minimatch': 11.0.4
+  '@typescript-eslint/typescript-estree>minimatch': 11.0.4
